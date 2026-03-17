@@ -1,0 +1,71 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user with role-based access control.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "faculty", "student"] },
+        "isBlocked": { "type": "boolean" },
+        "canMaintainMOA": { "type": "boolean", "description": "Specific right for faculty to add/edit MOAs." },
+        "college": { "type": "string", "description": "College the user belongs to." }
+      },
+      "required": ["email", "role"]
+    },
+    "MOA": {
+      "title": "MOA",
+      "description": "Memorandum of Agreement record.",
+      "type": "object",
+      "properties": {
+        "hteid": { "type": "string" },
+        "companyName": { "type": "string" },
+        "companyAddress": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "contactPersonEmail": { "type": "string", "format": "email" },
+        "industryType": { "type": "string" },
+        "effectiveDate": { "type": "string", "format": "date" },
+        "expirationDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["APPROVED", "PROCESSING", "EXPIRED", "EXPIRING"] },
+        "subStatus": { "type": "string" },
+        "endorsedByCollege": { "type": "string" },
+        "isDeleted": { "type": "boolean" },
+        "createdBy": { "type": "string" },
+        "updatedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["companyName", "status", "industryType", "effectiveDate"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Record of system operations.",
+      "type": "object",
+      "properties": {
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "operation": { "type": "string", "enum": ["insert", "edit", "delete", "recover"] },
+        "moaId": { "type": "string" },
+        "moaName": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "details": { "type": "string" }
+      },
+      "required": ["userName", "operation", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and permissions."
+    },
+    "/moas/{moaId}": {
+      "schema": "MOA",
+      "description": "MOA records."
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Audit trail entries."
+    }
+  }
+}

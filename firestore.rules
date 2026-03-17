@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields: email, displayName, role (admin|faculty|student), isBlocked, canMaintainMOA, college
+    //
+    // Collection: moas
+    // Fields: hteid, companyName, companyAddress, contactPerson, contactPersonEmail, 
+    //         industryType, effectiveDate, expirationDate, status, subStatus, 
+    //         endorsedByCollege, isDeleted, createdBy, updatedBy, createdAt, updatedAt
+    //
+    // Collection: audit_logs
+    // Fields: userName, userEmail, operation, moaId, moaName, timestamp, details
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        getUserData().role == 'admin' || 
+        (request.auth.token.email == "alexzagayle.ignacio@neu.edu.ph" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isFaculty() {
+      return isAuthenticated() && getUserData().role == 'faculty';
+    }
+
+    function isStudent() {
+      return isAuthenticated() && getUserData().role == 'student';
+    }
+
+    function isNotBlocked() {
+      return getUserData().isBlocked != true;
+    }
+
+    function canMaintainMOA() {
+      return isAdmin() || (isFaculty() && getUserData().canMaintainMOA == true);
+    }
+
+    function isValidMOA(data) {
+      return data.companyName is string && data.companyName.size() > 0 && data.companyName.size() < 200 &&
+             data.status in ['APPROVED', 'PROCESSING', 'EXPIRED', 'EXPIRING'] &&
+             data.industryType is string &&
+             data.effectiveDate is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /moas/{moaId} {
+      allow read: if isAuthenticated() && isNotBlocked() && (
+        isAdmin() ||
+        (isFaculty() && resource.data.isDeleted != true) ||
+        (isStudent() && resource.data.status == 'APPROVED' && resource.data.isDeleted != true)
+      );
+      
+      allow create: if isAuthenticated() && isNotBlocked() && canMaintainMOA() && isValidMOA(request.resource.data);
+      allow update: if isAuthenticated() && isNotBlocked() && (
+        isAdmin() || 
+        (canMaintainMOA() && resource.data.isDeleted != true && isValidMOA(request.resource.data))
+      );
+      allow delete: if false; // Use soft delete instead
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && isNotBlocked();
+      allow update, delete: if false;
+    }
+  }
+}
