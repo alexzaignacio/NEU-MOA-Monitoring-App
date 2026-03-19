@@ -10,5 +10,6 @@ export const googleProvider = new GoogleAuthProvider();
 
 // Set custom parameters for Google Auth if needed
 googleProvider.setCustomParameters({
-  prompt: 'select_account'
+  prompt: 'select_account',
+  hd: 'neu.edu.ph'
 });

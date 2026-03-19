@@ -10,7 +10,8 @@ import {
   Menu, 
   X,
   ClipboardList,
-  ShieldCheck
+  ShieldCheck,
+  UserCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -23,6 +24,7 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) => {
   const { profile, isAdmin, isFaculty } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = React.useState(false);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true },
@@ -64,22 +66,51 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           ))}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-stone-100">
-          <div className="flex items-center gap-3 mb-6 px-2">
-            <div className="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 font-bold">
+        <div className="mt-auto pt-6 border-t border-stone-100 relative">
+          <AnimatePresence>
+            {isProfileDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute bottom-full left-0 w-full mb-2 bg-white border border-stone-200 rounded-2xl shadow-xl p-2 z-50"
+              >
+                <button
+                  onClick={() => {
+                    setActiveTab('profile');
+                    setIsProfileDropdownOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                    activeTab === 'profile' ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-stone-50 text-stone-700'
+                  }`}
+                >
+                  <UserCircle size={20} className={activeTab === 'profile' ? 'text-emerald-700' : 'text-emerald-600'} />
+                  <span className="font-medium">View Profile</span>
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors"
+                >
+                  <LogOut size={20} />
+                  <span className="font-medium">Sign Out</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <button 
+            onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+            className={`w-full flex items-center gap-3 px-2 py-2 rounded-2xl transition-all ${
+              isProfileDropdownOpen ? 'bg-stone-100' : 'hover:bg-stone-50'
+            }`}
+          >
+            <div className="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 font-bold shrink-0">
               {profile?.displayName?.[0] || profile?.email?.[0]?.toUpperCase()}
             </div>
-            <div className="overflow-hidden">
+            <div className="overflow-hidden text-left flex-1">
               <p className="font-semibold truncate text-sm">{profile?.displayName || 'User'}</p>
               <p className="text-xs text-stone-500 capitalize">{profile?.role}</p>
             </div>
-          </div>
-          <button 
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <LogOut size={20} />
-            <span className="font-medium">Sign Out</span>
           </button>
         </div>
       </aside>
@@ -124,6 +155,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                   <span>{item.label}</span>
                 </button>
               ))}
+              <button
+                onClick={() => {
+                  setActiveTab('profile');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-lg ${
+                  activeTab === 'profile' 
+                    ? 'bg-emerald-50 text-emerald-700 font-bold' 
+                    : 'text-stone-600'
+                }`}
+              >
+                <UserCircle size={24} />
+                <span>My Profile</span>
+              </button>
             </nav>
             <button 
               onClick={handleLogout}

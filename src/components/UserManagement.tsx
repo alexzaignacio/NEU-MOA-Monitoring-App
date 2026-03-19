@@ -76,9 +76,10 @@ export const UserManagement: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <select 
-                      className="bg-stone-100 border-none rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-emerald-500"
+                      className="bg-stone-100 border-none rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
                       value={user.role}
                       onChange={(e) => handleUpdateRole(user.uid, e.target.value as UserRole)}
+                      disabled={user.email === 'admin@neu.edu.ph'}
                     >
                       <option value="student">Student</option>
                       <option value="faculty">Faculty</option>
@@ -111,17 +112,19 @@ export const UserManagement: React.FC = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => handleToggleBlock(user.uid, !!user.isBlocked)}
-                      className={`p-2 rounded-xl transition-all ${
-                        user.isBlocked 
-                          ? 'text-emerald-600 hover:bg-emerald-50' 
-                          : 'text-red-600 hover:bg-red-50'
-                      }`}
-                      title={user.isBlocked ? 'Unblock User' : 'Block User'}
-                    >
-                      {user.isBlocked ? <CheckCircle size={18} /> : <Ban size={18} />}
-                    </button>
+                    {user.email !== 'admin@neu.edu.ph' && (
+                      <button 
+                        onClick={() => handleToggleBlock(user.uid, !!user.isBlocked)}
+                        className={`p-2 rounded-xl transition-all ${
+                          user.isBlocked 
+                            ? 'text-emerald-600 hover:bg-emerald-50' 
+                            : 'text-red-600 hover:bg-red-50'
+                        }`}
+                        title={user.isBlocked ? 'Unblock User' : 'Block User'}
+                      >
+                        {user.isBlocked ? <CheckCircle size={18} /> : <Ban size={18} />}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

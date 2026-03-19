@@ -16,7 +16,8 @@ import {
   User as UserIcon,
   Building,
   X,
-  FileText
+  FileText,
+  CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
@@ -34,8 +35,14 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMOA, setEditingMOA] = useState<MOA | null>(null);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
   const canMaintain = isAdmin || (isFaculty && profile?.canMaintainMOA);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const filteredMOAs = useMemo(() => {
     return moas.filter(m => {
@@ -59,7 +66,22 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20, x: '-50%' }}
+            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            exit={{ opacity: 0, y: -20, x: '-50%' }}
+            className="fixed top-4 left-1/2 z-[100] flex items-center gap-3 bg-stone-900 text-white px-6 py-4 rounded-2xl shadow-2xl"
+          >
+            <CheckCircle2 size={20} className="text-emerald-400" />
+            <span className="font-bold">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">MOA Records</h2>
@@ -124,6 +146,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
               onEdit={() => handleOpenForm(moa)}
               canEdit={canMaintain}
               isAdmin={isAdmin}
+              onToast={showToast}
             />
           ))}
         </AnimatePresence>
@@ -142,13 +165,23 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
         <MOAForm 
           moa={editingMOA} 
           onClose={() => setIsFormOpen(false)} 
+          onSuccess={(msg) => {
+            setIsFormOpen(false);
+            showToast(msg);
+          }}
         />
       )}
     </div>
   );
 };
 
-const MOACard: React.FC<{ moa: MOA, onEdit: () => void, canEdit: boolean, isAdmin: boolean }> = ({ moa, onEdit, canEdit, isAdmin }) => {
+const MOACard: React.FC<{ 
+  moa: MOA, 
+  onEdit: () => void, 
+  canEdit: boolean, 
+  isAdmin: boolean,
+  onToast: (msg: string) => void
+}> = ({ moa, onEdit, canEdit, isAdmin, onToast }) => {
   const { isStudent } = useAuth();
   
   const statusColors = {
@@ -161,11 +194,13 @@ const MOACard: React.FC<{ moa: MOA, onEdit: () => void, canEdit: boolean, isAdmi
   const handleDelete = async () => {
     if (window.confirm(`Are you sure you want to delete ${moa.companyName}?`)) {
       await softDeleteMOA(moa.id, moa.companyName);
+      onToast('MOA moved to trash');
     }
   };
 
   const handleRecover = async () => {
     await recoverMOA(moa.id, moa.companyName);
+    onToast('MOA restored successfully');
   };
 
   return (
@@ -236,7 +271,11 @@ const MOACard: React.FC<{ moa: MOA, onEdit: () => void, canEdit: boolean, isAdmi
   );
 };
 
-const MOAForm: React.FC<{ moa: MOA | null, onClose: () => void }> = ({ moa, onClose }) => {
+const MOAForm: React.FC<{ 
+  moa: MOA | null, 
+  onClose: () => void,
+  onSuccess: (msg: string) => void
+}> = ({ moa, onClose, onSuccess }) => {
   const [formData, setFormData] = useState<Partial<MOA>>(
     moa || {
       companyName: '',
@@ -259,10 +298,11 @@ const MOAForm: React.FC<{ moa: MOA | null, onClose: () => void }> = ({ moa, onCl
     try {
       if (moa) {
         await updateMOA(moa.id, formData);
+        onSuccess('MOA updated successfully');
       } else {
         await createMOA(formData);
+        onSuccess('MOA created successfully');
       }
-      onClose();
     } catch (error) {
       console.error(error);
       alert('Error saving MOA');

@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { MOA, AuditLog, UserProfile } from '../types';
+import { handleFirestoreError, OperationType } from '../utils/errorHandlers';
 
 export const logAction = async (
   operation: AuditLog['operation'],
@@ -24,72 +25,96 @@ export const logAction = async (
   const user = auth.currentUser;
   if (!user) return;
 
-  await addDoc(collection(db, 'audit_logs'), {
-    userName: user.displayName || user.email,
-    userEmail: user.email,
-    operation,
-    moaId,
-    moaName,
-    timestamp: new Date().toISOString(),
-    details
-  });
+  try {
+    await addDoc(collection(db, 'audit_logs'), {
+      userName: user.displayName || user.email,
+      userEmail: user.email,
+      operation,
+      moaId,
+      moaName,
+      timestamp: new Date().toISOString(),
+      details
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, 'audit_logs');
+  }
 };
 
 export const createMOA = async (moaData: Partial<MOA>) => {
   const user = auth.currentUser;
   if (!user) throw new Error('User not authenticated');
 
-  const moaRef = await addDoc(collection(db, 'moas'), {
-    ...moaData,
-    isDeleted: false,
-    createdBy: user.uid,
-    updatedBy: user.uid,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  });
+  try {
+    const moaRef = await addDoc(collection(db, 'moas'), {
+      ...moaData,
+      isDeleted: false,
+      createdBy: user.uid,
+      updatedBy: user.uid,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
 
-  await logAction('insert', moaRef.id, moaData.companyName || '', `Created MOA for ${moaData.companyName}`);
-  return moaRef.id;
+    await logAction('insert', moaRef.id, moaData.companyName || '', `Created MOA for ${moaData.companyName}`);
+    return moaRef.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, 'moas');
+    throw error;
+  }
 };
 
 export const updateMOA = async (moaId: string, moaData: Partial<MOA>) => {
   const user = auth.currentUser;
   if (!user) throw new Error('User not authenticated');
 
-  const moaRef = doc(db, 'moas', moaId);
-  await updateDoc(moaRef, {
-    ...moaData,
-    updatedBy: user.uid,
-    updatedAt: new Date().toISOString()
-  });
+  try {
+    const moaRef = doc(db, 'moas', moaId);
+    await updateDoc(moaRef, {
+      ...moaData,
+      updatedBy: user.uid,
+      updatedAt: new Date().toISOString()
+    });
 
-  await logAction('edit', moaId, moaData.companyName || '', `Updated MOA details`);
+    await logAction('edit', moaId, moaData.companyName || '', `Updated MOA details`);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `moas/${moaId}`);
+    throw error;
+  }
 };
 
 export const softDeleteMOA = async (moaId: string, companyName: string) => {
   const user = auth.currentUser;
   if (!user) throw new Error('User not authenticated');
 
-  const moaRef = doc(db, 'moas', moaId);
-  await updateDoc(moaRef, {
-    isDeleted: true,
-    updatedBy: user.uid,
-    updatedAt: new Date().toISOString()
-  });
+  try {
+    const moaRef = doc(db, 'moas', moaId);
+    await updateDoc(moaRef, {
+      isDeleted: true,
+      updatedBy: user.uid,
+      updatedAt: new Date().toISOString()
+    });
 
-  await logAction('delete', moaId, companyName, `Soft deleted MOA`);
+    await logAction('delete', moaId, companyName, `Soft deleted MOA`);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `moas/${moaId}`);
+    throw error;
+  }
 };
 
 export const recoverMOA = async (moaId: string, companyName: string) => {
   const user = auth.currentUser;
   if (!user) throw new Error('User not authenticated');
 
-  const moaRef = doc(db, 'moas', moaId);
-  await updateDoc(moaRef, {
-    isDeleted: false,
-    updatedBy: user.uid,
-    updatedAt: new Date().toISOString()
-  });
+  try {
+    const moaRef = doc(db, 'moas', moaId);
+    await updateDoc(moaRef, {
+      isDeleted: false,
+      updatedBy: user.uid,
+      updatedAt: new Date().toISOString()
+    });
 
-  await logAction('recover', moaId, companyName, `Recovered MOA`);
+    await logAction('recover', moaId, companyName, `Recovered MOA`);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `moas/${moaId}`);
+    throw error;
+  }
 };

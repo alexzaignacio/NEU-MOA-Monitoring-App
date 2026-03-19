@@ -8,6 +8,9 @@ export interface UserProfile {
   isBlocked?: boolean;
   canMaintainMOA?: boolean;
   college?: string;
+  department?: string;
+  position?: string;
+  createdAt?: string;
 }
 
 export type MOAStatus = 'APPROVED' | 'PROCESSING' | 'EXPIRED' | 'EXPIRING';

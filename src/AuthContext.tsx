@@ -3,6 +3,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { UserProfile, UserRole } from './types';
+import { handleFirestoreError, OperationType } from './utils/errorHandlers';
 
 interface AuthContextType {
   user: User | null;
@@ -43,8 +44,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               isBlocked: false,
               canMaintainMOA: false,
             };
-            await setDoc(profileRef, newProfile);
-            setProfile(newProfile);
+            try {
+              await setDoc(profileRef, newProfile);
+              setProfile(newProfile);
+            } catch (error) {
+              handleFirestoreError(error, OperationType.CREATE, `users/${firebaseUser.uid}`);
+            }
           }
           setLoading(false);
         });

@@ -66,7 +66,16 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == userId && (
+        (request.resource.data.role == 'student' && request.resource.data.isBlocked == false) ||
+        isAdmin()
+      );
+      allow update: if isAdmin() || (
+        isAuthenticated() && request.auth.uid == userId && 
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.isBlocked == resource.data.isBlocked &&
+        request.resource.data.canMaintainMOA == resource.data.canMaintainMOA
+      );
     }
 
     match /moas/{moaId} {

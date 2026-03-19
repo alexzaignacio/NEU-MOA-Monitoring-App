@@ -5,9 +5,11 @@ import { Dashboard } from './components/Dashboard';
 import { MOAManagement } from './components/MOAManagement';
 import { UserManagement } from './components/UserManagement';
 import { AuditTrail } from './components/AuditTrail';
+import { Profile } from './components/Profile';
 import { Login } from './components/Login';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { db } from './firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocFromServer, doc } from 'firebase/firestore';
 import { MOA } from './types';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 
@@ -16,6 +18,19 @@ const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [moas, setMoas] = useState<MOA[]>([]);
   const [moasLoading, setMoasLoading] = useState(true);
+
+  useEffect(() => {
+    async function testConnection() {
+      try {
+        await getDocFromServer(doc(db, 'test', 'connection'));
+      } catch (error) {
+        if(error instanceof Error && error.message.includes('the client is offline')) {
+          console.error("Please check your Firebase configuration. ");
+        }
+      }
+    }
+    testConnection();
+  }, []);
 
   useEffect(() => {
     if (!user || profile?.isBlocked) return;
@@ -72,6 +87,8 @@ const AppContent: React.FC = () => {
         return isAdmin ? <UserManagement /> : <Dashboard moas={moas} />;
       case 'audit':
         return isAdmin ? <AuditTrail /> : <Dashboard moas={moas} />;
+      case 'profile':
+        return <Profile />;
       default:
         return <Dashboard moas={moas} />;
     }
@@ -86,8 +103,10 @@ const AppContent: React.FC = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
