@@ -35,7 +35,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (!user || profile?.isBlocked) return;
 
-    const q = query(collection(db, 'moas'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'moa_records'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const moasData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MOA));
       setMoas(moasData);
@@ -57,7 +57,10 @@ const AppContent: React.FC = () => {
     return <Login />;
   }
 
-  if (profile?.isBlocked) {
+  const ADMIN_EMAILS = ['jcesperanza@neu.edu.ph', 'alexzagayle.ignacio@neu.edu.ph'];
+  const isProtectedAdmin = profile && ADMIN_EMAILS.includes(profile.email);
+
+  if (profile?.isBlocked && !isProtectedAdmin) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center p-6">
         <div className="bg-white p-12 rounded-[3rem] shadow-2xl text-center max-w-md border border-red-100">

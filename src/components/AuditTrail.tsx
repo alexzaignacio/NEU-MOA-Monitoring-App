@@ -30,74 +30,74 @@ export const AuditTrail: React.FC = () => {
 
   const getOperationColor = (op: AuditLog['operation']) => {
     switch (op) {
-      case 'insert': return 'bg-emerald-100 text-emerald-700';
-      case 'edit': return 'bg-blue-100 text-blue-700';
-      case 'delete': return 'bg-red-100 text-red-700';
-      case 'recover': return 'bg-amber-100 text-amber-700';
-      default: return 'bg-stone-100 text-stone-700';
+      case 'insert': return 'bg-neu-orange/20 text-neu-orange border-neu-orange/30';
+      case 'edit': return 'bg-white/10 text-white/60 border-white/20';
+      case 'delete': return 'bg-red-500/20 text-red-500 border-red-500/30';
+      case 'recover': return 'bg-neu-orange/20 text-neu-orange border-neu-orange/30';
+      default: return 'bg-white/5 text-white/40 border-white/5';
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <header>
-        <h2 className="text-3xl font-bold tracking-tight">Audit Trail</h2>
-        <p className="text-stone-500 mt-1">Track all system operations and user actions.</p>
+        <h2 className="text-5xl font-black tracking-tighter text-neu-white uppercase leading-none">Audit Trail</h2>
+        <p className="text-white/40 font-black uppercase tracking-widest text-xs mt-2">Track all system operations and user actions.</p>
       </header>
 
-      <div className="bg-white rounded-[2rem] border border-stone-100 shadow-sm overflow-hidden">
-        <div className="p-6 bg-stone-50 border-b border-stone-100 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-stone-600 font-bold uppercase tracking-widest text-xs">
-            <History size={16} />
+      <div className="glass-card rounded-[2.5rem] border-white/5 shadow-2xl overflow-hidden">
+        <div className="p-8 bg-orange-gradient border-b border-white/10 flex items-center justify-between text-neu-white">
+          <div className="flex items-center gap-3 font-black uppercase tracking-widest text-xs">
+            <History size={20} className="text-neu-white" />
             Recent Activity
           </div>
-          <span className="text-xs text-stone-400 font-medium">Showing last 100 operations</span>
+          <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">Showing last 100 operations</span>
         </div>
 
-        <div className="divide-y divide-stone-50">
+        <div className="divide-y divide-white/5">
           {logs.map((log) => (
             <motion.div 
               key={log.id}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="p-6 hover:bg-stone-50/50 transition-colors flex flex-col md:flex-row md:items-center gap-4"
+              className="p-8 hover:bg-white/5 transition-all duration-300 flex flex-col md:flex-row md:items-center gap-6 group"
             >
-              <div className="flex items-center gap-4 flex-1">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${getOperationColor(log.operation)}`}>
-                  <ClipboardList size={20} />
+              <div className="flex items-center gap-6 flex-1">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-xl border ${getOperationColor(log.operation)} group-hover:scale-105 transition-transform`}>
+                  <ClipboardList size={24} />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-stone-900">{log.userName}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getOperationColor(log.operation)}`}>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="font-normal text-neu-white uppercase tracking-tighter text-lg leading-none">{log.userName}</span>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getOperationColor(log.operation)}`}>
                       {log.operation}
                     </span>
-                    <span className="text-stone-400 text-sm">on</span>
-                    <span className="font-semibold text-stone-700">{log.moaName}</span>
+                    <span className="text-white/20 text-[10px] font-black uppercase tracking-widest">on</span>
+                    <span className="font-normal text-neu-white uppercase tracking-tighter text-lg leading-none">{log.moaName}</span>
                   </div>
-                  <p className="text-sm text-stone-500 mt-1 flex items-center gap-1">
-                    <Info size={14} /> {log.details}
+                  <p className="text-sm text-white/40 mt-2 flex items-center gap-2 font-normal uppercase tracking-tighter italic">
+                    <Info size={16} className="text-neu-orange" /> {log.details}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 text-stone-400 shrink-0">
-                <div className="flex items-center gap-2">
-                  <Calendar size={14} />
-                  <span className="text-xs font-medium">{format(parseISO(log.timestamp), 'MMM dd, yyyy')}</span>
+              <div className="flex items-center gap-8 text-white/20 shrink-0">
+                <div className="flex items-center gap-3">
+                  <Calendar size={16} className="text-neu-orange/40" />
+                  <span className="text-xs font-black uppercase tracking-widest">{format(parseISO(log.timestamp), 'MMM dd, yyyy')}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={14} />
-                  <span className="text-xs font-medium">{format(parseISO(log.timestamp), 'HH:mm:ss')}</span>
+                <div className="flex items-center gap-3">
+                  <Clock size={16} className="text-neu-orange/40" />
+                  <span className="text-xs font-black uppercase tracking-widest">{format(parseISO(log.timestamp), 'HH:mm:ss')}</span>
                 </div>
               </div>
             </motion.div>
           ))}
 
           {logs.length === 0 && !loading && (
-            <div className="p-20 text-center text-stone-400">
-              <ClipboardList size={48} className="mx-auto mb-4 opacity-20" />
-              <p>No audit logs found.</p>
+            <div className="py-32 text-center text-white/20">
+              <ClipboardList size={80} className="mx-auto mb-6 opacity-10" />
+              <p className="font-black uppercase tracking-widest">No audit logs found.</p>
             </div>
           )}
         </div>

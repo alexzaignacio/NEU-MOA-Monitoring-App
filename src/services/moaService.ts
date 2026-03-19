@@ -45,8 +45,10 @@ export const createMOA = async (moaData: Partial<MOA>) => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    const moaRef = await addDoc(collection(db, 'moas'), {
+    const moaRef = await addDoc(collection(db, 'moa_records'), {
       ...moaData,
+      status: 'active',
+      moaStatus: moaData.moaStatus || 'PROCESSING',
       isDeleted: false,
       createdBy: user.uid,
       updatedBy: user.uid,
@@ -57,7 +59,7 @@ export const createMOA = async (moaData: Partial<MOA>) => {
     await logAction('insert', moaRef.id, moaData.companyName || '', `Created MOA for ${moaData.companyName}`);
     return moaRef.id;
   } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, 'moas');
+    handleFirestoreError(error, OperationType.CREATE, 'moa_records');
     throw error;
   }
 };
@@ -67,7 +69,7 @@ export const updateMOA = async (moaId: string, moaData: Partial<MOA>) => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    const moaRef = doc(db, 'moas', moaId);
+    const moaRef = doc(db, 'moa_records', moaId);
     await updateDoc(moaRef, {
       ...moaData,
       updatedBy: user.uid,
@@ -76,7 +78,7 @@ export const updateMOA = async (moaId: string, moaData: Partial<MOA>) => {
 
     await logAction('edit', moaId, moaData.companyName || '', `Updated MOA details`);
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `moas/${moaId}`);
+    handleFirestoreError(error, OperationType.UPDATE, `moa_records/${moaId}`);
     throw error;
   }
 };
@@ -86,16 +88,18 @@ export const softDeleteMOA = async (moaId: string, companyName: string) => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    const moaRef = doc(db, 'moas', moaId);
+    const moaRef = doc(db, 'moa_records', moaId);
     await updateDoc(moaRef, {
+      status: 'deleted',
       isDeleted: true,
+      deletedAt: new Date().toISOString(),
       updatedBy: user.uid,
       updatedAt: new Date().toISOString()
     });
 
     await logAction('delete', moaId, companyName, `Soft deleted MOA`);
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `moas/${moaId}`);
+    handleFirestoreError(error, OperationType.UPDATE, `moa_records/${moaId}`);
     throw error;
   }
 };
@@ -105,8 +109,9 @@ export const recoverMOA = async (moaId: string, companyName: string) => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    const moaRef = doc(db, 'moas', moaId);
+    const moaRef = doc(db, 'moa_records', moaId);
     await updateDoc(moaRef, {
+      status: 'active',
       isDeleted: false,
       updatedBy: user.uid,
       updatedAt: new Date().toISOString()
@@ -114,7 +119,7 @@ export const recoverMOA = async (moaId: string, companyName: string) => {
 
     await logAction('recover', moaId, companyName, `Recovered MOA`);
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `moas/${moaId}`);
+    handleFirestoreError(error, OperationType.UPDATE, `moa_records/${moaId}`);
     throw error;
   }
 };

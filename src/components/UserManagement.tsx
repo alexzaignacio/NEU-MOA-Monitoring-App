@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, UserRole } from '../types';
 import { db } from '../firebase';
-import { collection, onSnapshot, doc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { useAuth } from '../AuthContext';
+import { collection, onSnapshot, doc, updateDoc, query, orderBy, deleteDoc } from 'firebase/firestore';
 import { 
   Users, 
   Shield, 
@@ -11,13 +12,18 @@ import {
   MoreVertical,
   GraduationCap,
   Briefcase,
-  ShieldAlert
+  ShieldAlert,
+  Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export const UserManagement: React.FC = () => {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const ADMIN_EMAILS = ['jcesperanza@neu.edu.ph', 'alexzagayle.ignacio@neu.edu.ph'];
+  const isProtectedAdmin = (email: string) => ADMIN_EMAILS.includes(email);
 
   useEffect(() => {
     const q = query(collection(db, 'users'), orderBy('email'));
@@ -41,90 +47,107 @@ export const UserManagement: React.FC = () => {
     await updateDoc(doc(db, 'users', uid), { canMaintainMOA: !canMaintain });
   };
 
+  const handleDeleteUser = async (uid: string, email: string) => {
+    if (window.confirm(`Are you sure you want to permanently delete user ${email}?`)) {
+      await deleteDoc(doc(db, 'users', uid));
+    }
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <header>
-        <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
-        <p className="text-stone-500 mt-1">Manage system access and assign roles.</p>
+        <h2 className="text-5xl font-black tracking-tighter text-neu-white uppercase leading-none">User Management</h2>
+        <p className="text-white/40 font-black uppercase tracking-widest text-xs mt-2">Manage system access and assign roles.</p>
       </header>
 
-      <div className="bg-white rounded-[2rem] border border-stone-100 shadow-sm overflow-hidden">
+      <div className="glass-card rounded-[2.5rem] border-white/5 shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-stone-50 border-b border-stone-100">
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-stone-500">User</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-stone-500">Role</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-stone-500">Status</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-stone-500">Permissions</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-stone-500 text-right">Actions</th>
+              <tr className="bg-orange-gradient border-b border-white/10 text-neu-white">
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">User</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Role</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Status</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Permissions</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-50">
+            <tbody className="divide-y divide-white/5">
               {users.map((user) => (
-                <tr key={user.uid} className="hover:bg-stone-50/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 font-bold">
+                <tr key={user.uid} className="hover:bg-white/5 transition-all duration-300 group">
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-orange-gradient flex items-center justify-center text-neu-white font-black shadow-xl shadow-neu-orange/20 group-hover:scale-105 transition-transform">
                         {user.displayName?.[0] || user.email?.[0]?.toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-semibold text-stone-900">{user.displayName || 'Unnamed User'}</p>
-                        <p className="text-xs text-stone-500">{user.email}</p>
+                        <p className="font-normal text-neu-white uppercase tracking-tighter text-lg leading-none mb-1">{user.displayName || 'Unnamed User'}</p>
+                        <p className="text-xs text-white/40 font-normal uppercase tracking-widest">{user.email}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-8 py-6">
                     <select 
-                      className="bg-stone-100 border-none rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
+                      className="bg-white/5 border-none rounded-xl px-4 py-2 text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-neu-orange disabled:opacity-50 text-neu-white cursor-pointer"
                       value={user.role}
                       onChange={(e) => handleUpdateRole(user.uid, e.target.value as UserRole)}
-                      disabled={user.email === 'admin@neu.edu.ph'}
+                      disabled={isProtectedAdmin(user.email) || user.uid === currentUser?.uid}
                     >
-                      <option value="student">Student</option>
-                      <option value="faculty">Faculty</option>
-                      <option value="admin">Admin</option>
+                      <option value="student" className="bg-neu-black">Student</option>
+                      <option value="faculty" className="bg-neu-black">Faculty</option>
+                      <option value="admin" className="bg-neu-black">Admin</option>
                     </select>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-8 py-6">
                     {user.isBlocked ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wider">
-                        <Ban size={10} /> Blocked
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/30">
+                        <Ban size={12} /> Blocked
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
-                        <CheckCircle size={10} /> Active
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-neu-orange/20 text-neu-orange text-[10px] font-black uppercase tracking-widest border border-neu-orange/30">
+                        <CheckCircle size={12} /> Active
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-8 py-6">
                     {user.role === 'faculty' && (
                       <button 
                         onClick={() => handleToggleMaintain(user.uid, !!user.canMaintainMOA)}
-                        className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
                           user.canMaintainMOA 
-                            ? 'bg-blue-100 text-blue-700' 
-                            : 'bg-stone-100 text-stone-400'
+                            ? 'bg-neu-orange/20 text-neu-orange border-neu-orange/30' 
+                            : 'bg-white/5 text-white/20 border-white/5 hover:text-white/40'
                         }`}
                       >
                         Maintain MOA: {user.canMaintainMOA ? 'ON' : 'OFF'}
                       </button>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    {user.email !== 'admin@neu.edu.ph' && (
-                      <button 
-                        onClick={() => handleToggleBlock(user.uid, !!user.isBlocked)}
-                        className={`p-2 rounded-xl transition-all ${
-                          user.isBlocked 
-                            ? 'text-emerald-600 hover:bg-emerald-50' 
-                            : 'text-red-600 hover:bg-red-50'
-                        }`}
-                        title={user.isBlocked ? 'Unblock User' : 'Block User'}
-                      >
-                        {user.isBlocked ? <CheckCircle size={18} /> : <Ban size={18} />}
-                      </button>
-                    )}
+                  <td className="px-8 py-6 text-right">
+                    <div className="flex justify-end gap-3">
+                      {!isProtectedAdmin(user.email) && user.uid !== currentUser?.uid && (
+                        <>
+                          <button 
+                            onClick={() => handleToggleBlock(user.uid, !!user.isBlocked)}
+                            className={`p-3 rounded-xl transition-all border ${
+                              user.isBlocked 
+                                ? 'text-neu-orange bg-neu-orange/10 border-neu-orange/20 hover:bg-neu-orange/20' 
+                                : 'text-red-500 bg-red-500/10 border-red-500/20 hover:bg-red-500/20'
+                            }`}
+                            title={user.isBlocked ? 'Unblock User' : 'Block User'}
+                          >
+                            {user.isBlocked ? <CheckCircle size={20} /> : <Ban size={20} />}
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteUser(user.uid, user.email)}
+                            className="p-3 text-white/20 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-xl transition-all"
+                            title="Delete User"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

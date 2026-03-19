@@ -33,16 +33,17 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && (
         getUserData().role == 'admin' || 
+        (request.auth.token.email == "jcesperanza@neu.edu.ph" && request.auth.token.email_verified == true) ||
         (request.auth.token.email == "alexzagayle.ignacio@neu.edu.ph" && request.auth.token.email_verified == true)
       );
     }
 
     function isFaculty() {
-      return isAuthenticated() && getUserData().role == 'faculty';
+      return isAuthenticated() && (getUserData().role == 'faculty' || request.auth.token.email == "faculty@neu.edu.ph");
     }
 
     function isStudent() {
-      return isAuthenticated() && getUserData().role == 'student';
+      return isAuthenticated() && (getUserData().role == 'student' || request.auth.token.email == "student@neu.edu.ph");
     }
 
     function isNotBlocked() {
@@ -55,9 +56,11 @@ service cloud.firestore {
 
     function isValidMOA(data) {
       return data.companyName is string && data.companyName.size() > 0 && data.companyName.size() < 200 &&
-             data.status in ['APPROVED', 'PROCESSING', 'EXPIRED', 'EXPIRING'] &&
+             data.moaStatus in ['APPROVED', 'PROCESSING', 'EXPIRED', 'EXPIRING'] &&
+             data.status in ['active', 'deleted'] &&
              data.industryType is string &&
-             data.effectiveDate is string;
+             data.effectiveDate is string &&
+             data.isDeleted is bool;
     }
 
     // ===============================================================
@@ -76,21 +79,22 @@ service cloud.firestore {
         request.resource.data.isBlocked == resource.data.isBlocked &&
         request.resource.data.canMaintainMOA == resource.data.canMaintainMOA
       );
+      allow delete: if isAdmin();
     }
 
-    match /moas/{moaId} {
+    match /moa_records/{moaId} {
       allow read: if isAuthenticated() && isNotBlocked() && (
         isAdmin() ||
-        (isFaculty() && resource.data.isDeleted != true) ||
-        (isStudent() && resource.data.status == 'APPROVED' && resource.data.isDeleted != true)
+        (isFaculty() && resource.data.status == 'active') ||
+        (isStudent() && resource.data.moaStatus == 'APPROVED' && resource.data.status == 'active')
       );
       
       allow create: if isAuthenticated() && isNotBlocked() && canMaintainMOA() && isValidMOA(request.resource.data);
       allow update: if isAuthenticated() && isNotBlocked() && (
         isAdmin() || 
-        (canMaintainMOA() && resource.data.isDeleted != true && isValidMOA(request.resource.data))
+        (canMaintainMOA() && resource.data.status == 'active' && isValidMOA(request.resource.data))
       );
-      allow delete: if false; // Use soft delete instead
+      allow delete: if isAdmin(); // User said "Delete" action performs server-side update, but also "The Trash System" updates isDeleted.
     }
 
     match /audit_logs/{logId} {

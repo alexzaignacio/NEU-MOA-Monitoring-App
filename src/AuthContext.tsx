@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { UserProfile, UserRole } from './types';
 import { handleFirestoreError, OperationType } from './utils/errorHandlers';
@@ -31,24 +31,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         const unsubProfile = onSnapshot(profileRef, async (docSnap) => {
           if (docSnap.exists()) {
-            setProfile({ uid: firebaseUser.uid, ...docSnap.data() } as UserProfile);
+            const data = docSnap.data();
+            const adminEmails = ['jcesperanza@neu.edu.ph', 'alexzagayle.ignacio@neu.edu.ph'];
+            if (data.isBlocked && adminEmails.includes(firebaseUser.email || '')) {
+              try {
+                await updateDoc(profileRef, { isBlocked: false });
+              } catch (error) {
+                console.error("Failed to auto-unblock admin:", error);
+              }
+            }
+            setProfile({ uid: firebaseUser.uid, ...data } as UserProfile);
           } else {
             // Create default profile for new users
-            // Default role is student unless it's the admin email
-            const role: UserRole = firebaseUser.email === 'alexzagayle.ignacio@neu.edu.ph' ? 'admin' : 'student';
-            const newProfile: UserProfile = {
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              displayName: firebaseUser.displayName || '',
-              role,
-              isBlocked: false,
-              canMaintainMOA: false,
-            };
-            try {
-              await setDoc(profileRef, newProfile);
-              setProfile(newProfile);
-            } catch (error) {
-              handleFirestoreError(error, OperationType.CREATE, `users/${firebaseUser.uid}`);
+            // Restrict to @neu.edu.ph domain
+            if (firebaseUser.email && firebaseUser.email.toLowerCase().endsWith('@neu.edu.ph')) {
+              const adminEmails = ['jcesperanza@neu.edu.ph', 'alexzagayle.ignacio@neu.edu.ph'];
+              let role: UserRole = 'student';
+              
+              if (adminEmails.includes(firebaseUser.email)) {
+                role = 'admin';
+              } else if (firebaseUser.email === 'faculty@neu.edu.ph') {
+                role = 'faculty';
+              } else if (firebaseUser.email === 'student@neu.edu.ph') {
+                role = 'student';
+              }
+
+              const newProfile: UserProfile = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email || '',
+                displayName: firebaseUser.displayName || '',
+                role,
+                isBlocked: false,
+                canMaintainMOA: false,
+              };
+              try {
+                await setDoc(profileRef, newProfile);
+                setProfile(newProfile);
+              } catch (error) {
+                handleFirestoreError(error, OperationType.CREATE, `users/${firebaseUser.uid}`);
+              }
+            } else {
+              // If not a neu.edu.ph email, we don't create a profile and sign them out
+              await auth.signOut();
             }
           }
           setLoading(false);

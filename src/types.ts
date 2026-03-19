@@ -14,6 +14,7 @@ export interface UserProfile {
 }
 
 export type MOAStatus = 'APPROVED' | 'PROCESSING' | 'EXPIRED' | 'EXPIRING';
+export type RecordStatus = 'active' | 'deleted';
 
 export interface MOA {
   id: string;
@@ -25,10 +26,12 @@ export interface MOA {
   industryType: string;
   effectiveDate: string;
   expirationDate: string;
-  status: MOAStatus;
+  moaStatus: MOAStatus;
+  status: RecordStatus;
   subStatus?: string;
   endorsedByCollege: string;
-  isDeleted: boolean;
+  isDeleted: boolean; // Keeping for backward compatibility during migration if needed, but will use status
+  deletedAt?: string;
   createdBy: string;
   updatedBy: string;
   createdAt: string;

@@ -17,11 +17,11 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
   const stats = useMemo(() => {
-    const active = moas.filter(m => m.status === 'APPROVED' && !m.isDeleted).length;
-    const processing = moas.filter(m => m.status === 'PROCESSING' && !m.isDeleted).length;
-    const expired = moas.filter(m => m.status === 'EXPIRED' && !m.isDeleted).length;
+    const active = moas.filter(m => m.moaStatus === 'APPROVED' && !m.isDeleted).length;
+    const processing = moas.filter(m => m.moaStatus === 'PROCESSING' && !m.isDeleted).length;
+    const expired = moas.filter(m => m.moaStatus === 'EXPIRED' && !m.isDeleted).length;
     const expiring = moas.filter(m => {
-      if (m.isDeleted || m.status !== 'APPROVED') return false;
+      if (m.isDeleted || m.moaStatus !== 'APPROVED') return false;
       const expDate = parseISO(m.expirationDate);
       const twoMonthsFromNow = addMonths(new Date(), 2);
       return isBefore(expDate, twoMonthsFromNow) && !isBefore(expDate, new Date());
@@ -31,17 +31,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
   }, [moas]);
 
   const cards = [
-    { label: 'Active MOAs', value: stats.active, icon: FileCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Processing', value: stats.processing, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Expiring Soon', value: stats.expiring, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Expired', value: stats.expired, icon: Calendar, color: 'text-red-600', bg: 'bg-red-50' },
+    { label: 'Active MOAs', value: stats.active, icon: FileCheck, color: 'text-neu-orange', trend: '+12%' },
+    { label: 'Processing', value: stats.processing, icon: Clock, color: 'text-neu-white', trend: '+5%' },
+    { label: 'Expiring Soon', value: stats.expiring, icon: AlertCircle, color: 'text-neu-red', trend: '-2%' },
+    { label: 'Expired', value: stats.expired, icon: Calendar, color: 'text-white/20', trend: '0%' },
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <header>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard Overview</h2>
-        <p className="text-stone-500 mt-1">Real-time statistics of Memoranda of Agreement.</p>
+        <h2 className="text-5xl font-black tracking-tighter text-neu-white uppercase leading-none">
+          WE'VE SCALED <br />
+          <span className="text-orange-gradient">CHANNELS</span>
+        </h2>
+        <p className="text-white/40 mt-4 font-bold uppercase tracking-widest text-sm">Real-time system monitoring & analytics</p>
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -51,82 +54,115 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow"
+            className="glass-card p-8 rounded-[2rem] hover:border-white/20 transition-all duration-500 group relative overflow-hidden"
           >
-            <div className={`w-12 h-12 ${card.bg} ${card.color} rounded-2xl flex items-center justify-center mb-4`}>
-              <card.icon size={24} />
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <card.icon size={64} />
             </div>
-            <p className="text-stone-500 text-sm font-medium uppercase tracking-wider">{card.label}</p>
-            <h3 className="text-4xl font-bold mt-1">{card.value}</h3>
+            
+            <div className="relative z-10">
+              <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-4">{card.label}</p>
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-5xl font-black text-neu-white tracking-tighter">{card.value}</h3>
+                <span className={`text-[10px] font-black ${card.trend.startsWith('+') ? 'text-neu-orange' : 'text-white/20'}`}>
+                  {card.trend}
+                </span>
+              </div>
+              
+              {/* Mini Trend Line */}
+              <div className="mt-6 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ x: '-100%' }}
+                  animate={{ x: '0%' }}
+                  transition={{ delay: 0.5 + (index * 0.1), duration: 1 }}
+                  className="h-full bg-orange-gradient w-2/3 rounded-full shadow-[0_0_10px_rgba(255,77,0,0.5)]"
+                />
+              </div>
+            </div>
           </motion.div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Activity or Chart could go here */}
-        <div className="bg-white p-8 rounded-3xl border border-stone-100 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <TrendingUp size={20} className="text-emerald-600" />
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+          className="glass-card p-10 rounded-[2.5rem]"
+        >
+          <div className="flex items-center justify-between mb-10">
+            <h3 className="text-2xl font-black uppercase tracking-tighter text-neu-white">
               Industry Distribution
             </h3>
+            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-neu-orange">
+              <TrendingUp size={20} />
+            </div>
           </div>
-          <div className="space-y-4">
+          
+          <div className="space-y-8">
             {Object.entries(
-              moas.reduce((acc, m) => {
+              moas.filter(m => !m.isDeleted).reduce((acc, m) => {
                 acc[m.industryType] = (acc[m.industryType] || 0) + 1;
                 return acc;
               }, {} as Record<string, number>)
             ).sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 5).map(([type, count]) => (
-              <div key={type} className="flex items-center gap-4">
-                <div className="flex-1">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">{type}</span>
-                    <span className="text-sm text-stone-500">{count as number}</span>
-                  </div>
-                  <div className="w-full bg-stone-100 rounded-full h-2">
-                    <div 
-                      className="bg-emerald-500 h-2 rounded-full" 
-                      style={{ width: `${((count as number) / (moas.length || 1)) * 100}%` }}
-                    ></div>
-                  </div>
+              <div key={type} className="group">
+                <div className="flex justify-between mb-3 items-end">
+                  <span className="text-xs font-normal text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">{type}</span>
+                  <span className="text-2xl font-normal text-neu-white tracking-tighter leading-none">{count as number}</span>
+                </div>
+                <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${((count as number) / (moas.filter(m => !m.isDeleted).length || 1)) * 100}%` }}
+                    transition={{ duration: 1.5, ease: "circOut" }}
+                    className="bg-orange-gradient h-full rounded-full shadow-[0_0_10px_rgba(255,77,0,0.3)]" 
+                  ></motion.div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white p-8 rounded-3xl border border-stone-100 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <Building2 size={20} className="text-blue-600" />
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5 }}
+          className="glass-card p-10 rounded-[2.5rem]"
+        >
+          <div className="flex items-center justify-between mb-10">
+            <h3 className="text-2xl font-black uppercase tracking-tighter text-neu-white">
               By College
             </h3>
+            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-neu-orange">
+              <Building2 size={20} />
+            </div>
           </div>
-          <div className="space-y-4">
+          
+          <div className="space-y-8">
             {Object.entries(
-              moas.reduce((acc, m) => {
+              moas.filter(m => !m.isDeleted).reduce((acc, m) => {
                 acc[m.endorsedByCollege] = (acc[m.endorsedByCollege] || 0) + 1;
                 return acc;
               }, {} as Record<string, number>)
             ).sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 5).map(([college, count]) => (
-              <div key={college} className="flex items-center gap-4">
-                <div className="flex-1">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">{college}</span>
-                    <span className="text-sm text-stone-500">{count as number}</span>
-                  </div>
-                  <div className="w-full bg-stone-100 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full" 
-                      style={{ width: `${((count as number) / (moas.length || 1)) * 100}%` }}
-                    ></div>
-                  </div>
+              <div key={college} className="group">
+                <div className="flex justify-between mb-3 items-end">
+                  <span className="text-xs font-normal text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">{college}</span>
+                  <span className="text-2xl font-normal text-neu-white tracking-tighter leading-none">{count as number}</span>
+                </div>
+                <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${((count as number) / (moas.filter(m => !m.isDeleted).length || 1)) * 100}%` }}
+                    transition={{ duration: 1.5, ease: "circOut" }}
+                    className="bg-orange-gradient h-full rounded-full shadow-[0_0_10px_rgba(255,77,0,0.3)]" 
+                  ></motion.div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

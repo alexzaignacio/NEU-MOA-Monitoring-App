@@ -36,63 +36,72 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
   const handleLogout = () => signOut(auth);
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row font-sans text-stone-900">
+    <div className="min-h-screen bg-neu-black flex flex-col md:flex-row font-sans text-neu-white overflow-hidden">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-stone-200 p-6">
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white">
-            <ShieldCheck size={24} />
+      <aside className="hidden md:flex flex-col w-72 bg-neu-black border-r border-white/5 p-8 shadow-2xl z-20">
+        <div className="flex items-center gap-4 mb-16 px-2">
+          <div className="w-12 h-12 bg-orange-gradient rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-neu-orange/40">
+            <ShieldCheck size={28} />
           </div>
           <div>
-            <h1 className="font-bold text-lg leading-tight">NEU MOA</h1>
-            <p className="text-xs text-stone-500 uppercase tracking-widest font-semibold">Monitoring</p>
+            <h1 className="font-black text-xl leading-none tracking-tighter text-white uppercase">NEU MOA</h1>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] font-black mt-1">Monitoring</p>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-2">
+        <nav className="flex-1 space-y-3">
           {menuItems.filter(item => item.show).map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group relative overflow-hidden ${
                 activeTab === item.id 
-                  ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' 
-                  : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900'
+                  ? 'bg-white/5 text-white font-black shadow-xl border border-white/10' 
+                  : 'text-white/30 hover:bg-white/5 hover:text-white/60'
               }`}
             >
-              <item.icon size={20} />
-              <span>{item.label}</span>
+              {activeTab === item.id && (
+                <motion.div 
+                  layoutId="active-pill"
+                  className="absolute left-0 w-1 h-6 bg-orange-gradient rounded-r-full"
+                />
+              )}
+              <item.icon size={22} className={activeTab === item.id ? 'text-neu-orange' : 'group-hover:text-neu-orange transition-colors'} />
+              <span className="tracking-tighter uppercase text-sm">{item.label}</span>
             </button>
           ))}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-stone-100 relative">
+        <div className="mt-auto pt-8 border-t border-white/5 relative">
           <AnimatePresence>
             {isProfileDropdownOpen && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="absolute bottom-full left-0 w-full mb-2 bg-white border border-stone-200 rounded-2xl shadow-xl p-2 z-50"
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute bottom-full left-0 w-full mb-6 glass-card border border-white/10 rounded-[2rem] shadow-2xl p-3 z-50 overflow-hidden"
               >
+                <div className="px-5 py-4 border-b border-white/5 mb-2">
+                  <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Account Settings</p>
+                </div>
                 <button
                   onClick={() => {
                     setActiveTab('profile');
                     setIsProfileDropdownOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                    activeTab === 'profile' ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-stone-50 text-stone-700'
+                  className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all ${
+                    activeTab === 'profile' ? 'bg-orange-gradient text-white font-black' : 'hover:bg-white/5 text-white/60'
                   }`}
                 >
-                  <UserCircle size={20} className={activeTab === 'profile' ? 'text-emerald-700' : 'text-emerald-600'} />
-                  <span className="font-medium">View Profile</span>
+                  <UserCircle size={20} className={activeTab === 'profile' ? 'text-white' : 'text-neu-orange'} />
+                  <span className="text-xs uppercase font-black tracking-widest">Profile</span>
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors"
+                  className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl hover:bg-red-500/10 text-red-500 transition-all mt-1"
                 >
                   <LogOut size={20} />
-                  <span className="font-medium">Sign Out</span>
+                  <span className="text-xs uppercase font-black tracking-widest">Sign Out</span>
                 </button>
               </motion.div>
             )}
@@ -100,31 +109,31 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
 
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-            className={`w-full flex items-center gap-3 px-2 py-2 rounded-2xl transition-all ${
-              isProfileDropdownOpen ? 'bg-stone-100' : 'hover:bg-stone-50'
+            className={`w-full flex items-center gap-4 px-4 py-4 rounded-[2rem] transition-all border border-transparent group ${
+              isProfileDropdownOpen ? 'bg-white/5 border-white/10' : 'hover:bg-white/5'
             }`}
           >
-            <div className="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 font-bold shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-orange-gradient flex items-center justify-center text-white font-black shrink-0 shadow-xl shadow-neu-orange/20 group-hover:scale-105 transition-transform">
               {profile?.displayName?.[0] || profile?.email?.[0]?.toUpperCase()}
             </div>
             <div className="overflow-hidden text-left flex-1">
-              <p className="font-semibold truncate text-sm">{profile?.displayName || 'User'}</p>
-              <p className="text-xs text-stone-500 capitalize">{profile?.role}</p>
+              <p className="font-black truncate text-sm text-white uppercase tracking-tighter">{profile?.displayName || 'User'}</p>
+              <p className="text-[10px] text-white/20 uppercase font-black tracking-[0.2em] mt-0.5">{profile?.role}</p>
             </div>
           </button>
         </div>
       </aside>
 
       {/* Mobile Header */}
-      <header className="md:hidden bg-white border-b border-stone-200 p-4 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
-            <ShieldCheck size={18} />
+      <header className="md:hidden bg-neu-black text-white p-6 flex items-center justify-between sticky top-0 z-50 border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-orange-gradient rounded-xl flex items-center justify-center text-white shadow-lg">
+            <ShieldCheck size={22} />
           </div>
-          <h1 className="font-bold">NEU MOA</h1>
+          <h1 className="font-black tracking-tighter uppercase text-lg">NEU MOA</h1>
         </div>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-stone-600">
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-white/40 hover:text-white transition-colors">
+          {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </header>
 
@@ -132,10 +141,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="md:hidden fixed inset-0 top-[65px] bg-white z-40 p-6 flex flex-col"
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="md:hidden fixed inset-0 top-[89px] bg-neu-black z-40 p-8 flex flex-col"
           >
             <nav className="space-y-4 flex-1">
               {menuItems.filter(item => item.show).map((item) => (
@@ -145,13 +155,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                     setActiveTab(item.id);
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-lg ${
+                  className={`w-full flex items-center gap-5 px-6 py-5 rounded-[2rem] text-xl uppercase font-black tracking-tighter ${
                     activeTab === item.id 
-                      ? 'bg-emerald-50 text-emerald-700 font-bold' 
-                      : 'text-stone-600'
+                      ? 'bg-orange-gradient text-white shadow-2xl' 
+                      : 'text-white/20 border border-white/5'
                   }`}
                 >
-                  <item.icon size={24} />
+                  <item.icon size={26} />
                   <span>{item.label}</span>
                 </button>
               ))}
@@ -160,21 +170,21 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                   setActiveTab('profile');
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-lg ${
+                className={`w-full flex items-center gap-5 px-6 py-5 rounded-[2rem] text-xl uppercase font-black tracking-tighter ${
                   activeTab === 'profile' 
-                    ? 'bg-emerald-50 text-emerald-700 font-bold' 
-                    : 'text-stone-600'
+                    ? 'bg-orange-gradient text-white shadow-2xl' 
+                    : 'text-white/20 border border-white/5'
                 }`}
               >
-                <UserCircle size={24} />
+                <UserCircle size={26} />
                 <span>My Profile</span>
               </button>
             </nav>
             <button 
               onClick={handleLogout}
-              className="mt-auto flex items-center gap-4 px-4 py-4 rounded-2xl text-red-600 font-bold border border-red-100"
+              className="mt-auto flex items-center gap-5 px-6 py-6 rounded-[2rem] text-red-500 font-black uppercase tracking-tighter border border-red-500/20 bg-red-500/5"
             >
-              <LogOut size={24} />
+              <LogOut size={26} />
               <span>Sign Out</span>
             </button>
           </motion.div>
@@ -182,7 +192,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-10 overflow-y-auto max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-6 md:p-12 overflow-y-auto max-w-7xl mx-auto w-full relative">
+        {/* Background Accents */}
+        <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-neu-orange/5 blur-[150px] rounded-full -z-10" />
+        <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-neu-red/5 blur-[150px] rounded-full -z-10" />
+        
         {children}
       </main>
     </div>

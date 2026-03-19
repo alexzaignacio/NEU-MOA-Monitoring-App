@@ -1,7 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-neu-blue: #003366;
-  --color-neu-orange: #F27D26;
-  --color-neu-accent: #BF5723;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --color-neu-black: #000000;
+  --color-neu-dark-gray: #111111;
+  --color-neu-orange: #FF4D00;
+  --color-neu-red: #8B0000;
+  --color-neu-white: #FFFFFF;
+}
+
+@utility bg-orange-gradient {
+  background: linear-gradient(135deg, #FF4D00 0%, #8B0000 100%);
+}
+
+@utility text-orange-gradient {
+  background: linear-gradient(135deg, #FF4D00 0%, #8B0000 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@utility glass-card {
+  background: rgba(17, 17, 17, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

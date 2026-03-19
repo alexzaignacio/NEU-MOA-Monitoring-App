@@ -51,9 +51,10 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
         m.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
         m.hteid.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesStatus = statusFilter === 'all' || m.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || m.moaStatus === statusFilter;
       const matchesCollege = collegeFilter === 'all' || m.endorsedByCollege === collegeFilter;
-      const matchesDeleted = showDeleted ? m.isDeleted : !m.isDeleted;
+      const isDeleted = m.status === 'deleted' || m.isDeleted;
+      const matchesDeleted = showDeleted ? true : !isDeleted;
 
       return matchesSearch && matchesStatus && matchesCollege && matchesDeleted;
     });
@@ -74,24 +75,24 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
             initial={{ opacity: 0, y: -20, x: '-50%' }}
             animate={{ opacity: 1, y: 20, x: '-50%' }}
             exit={{ opacity: 0, y: -20, x: '-50%' }}
-            className="fixed top-4 left-1/2 z-[100] flex items-center gap-3 bg-stone-900 text-white px-6 py-4 rounded-2xl shadow-2xl"
+            className="fixed top-4 left-1/2 z-[100] flex items-center gap-3 glass-card text-neu-white px-8 py-4 rounded-2xl shadow-2xl border-white/10"
           >
-            <CheckCircle2 size={20} className="text-emerald-400" />
-            <span className="font-bold">{toast.message}</span>
+            <CheckCircle2 size={20} className="text-neu-orange" />
+            <span className="font-black uppercase tracking-tighter">{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">MOA Records</h2>
-          <p className="text-stone-500">Manage and track all Memoranda of Agreement.</p>
+          <h2 className="text-5xl font-black tracking-tighter text-neu-white uppercase leading-none">MOA Records</h2>
+          <p className="text-white/40 font-black uppercase tracking-widest text-xs mt-2">Manage and track all Memoranda of Agreement.</p>
         </div>
         
         {canMaintain && (
           <button 
             onClick={() => handleOpenForm()}
-            className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+            className="flex items-center justify-center gap-2 bg-orange-gradient text-neu-white px-8 py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20"
           >
             <Plus size={20} />
             Add New MOA
@@ -99,13 +100,13 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
         )}
       </div>
 
-      <div className="bg-white p-4 rounded-3xl border border-stone-100 shadow-sm flex flex-col md:flex-row gap-4">
+      <div className="glass-card p-4 rounded-[2rem] border-white/5 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={20} />
           <input 
             type="text" 
-            placeholder="Search company, contact, or HTEID..." 
-            className="w-full pl-12 pr-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500 transition-all"
+            placeholder="SEARCH COMPANY, CONTACT, OR HTEID..." 
+            className="w-full pl-12 pr-4 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange transition-all font-black uppercase tracking-tighter text-neu-white placeholder:text-white/20"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -113,22 +114,22 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
         
         <div className="flex gap-2">
           <select 
-            className="bg-stone-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 transition-all text-sm font-medium"
+            className="bg-white/5 border-none rounded-xl px-6 py-4 focus:ring-2 focus:ring-neu-orange transition-all text-xs font-black uppercase tracking-widest text-neu-white cursor-pointer"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="all">All Statuses</option>
-            <option value="APPROVED">Approved</option>
-            <option value="PROCESSING">Processing</option>
-            <option value="EXPIRED">Expired</option>
-            <option value="EXPIRING">Expiring</option>
+            <option value="all" className="bg-neu-black">All Statuses</option>
+            <option value="APPROVED" className="bg-neu-black">Approved</option>
+            <option value="PROCESSING" className="bg-neu-black">Processing</option>
+            <option value="EXPIRED" className="bg-neu-black">Expired</option>
+            <option value="EXPIRING" className="bg-neu-black">Expiring</option>
           </select>
 
           {isAdmin && (
             <button 
               onClick={() => setShowDeleted(!showDeleted)}
-              className={`px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
-                showDeleted ? 'bg-red-50 text-red-600' : 'bg-stone-50 text-stone-600'
+              className={`px-6 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                showDeleted ? 'bg-neu-orange text-neu-white' : 'bg-white/5 text-white/40 hover:text-white/60'
               }`}
             >
               {showDeleted ? 'Showing Deleted' : 'Show Deleted'}
@@ -153,10 +154,10 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
       </div>
 
       {filteredMOAs.length === 0 && (
-        <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-stone-200">
+        <div className="text-center py-24 glass-card rounded-[2.5rem] border-dashed border-white/10">
           <div className="flex flex-col items-center">
-            <FileText size={48} className="mx-auto text-stone-300 mb-4" />
-            <p className="text-stone-500 font-medium">No MOA records found matching your criteria.</p>
+            <FileText size={64} className="mx-auto text-white/10 mb-6" />
+            <p className="text-white/40 font-black uppercase tracking-widest">No MOA records found matching your criteria.</p>
           </div>
         </div>
       )}
@@ -185,22 +186,22 @@ const MOACard: React.FC<{
   const { isStudent } = useAuth();
   
   const statusColors = {
-    APPROVED: 'bg-emerald-100 text-emerald-700',
-    PROCESSING: 'bg-blue-100 text-blue-700',
-    EXPIRED: 'bg-red-100 text-red-700',
-    EXPIRING: 'bg-amber-100 text-amber-700',
+    APPROVED: 'bg-neu-orange/20 text-neu-orange border-neu-orange/30',
+    PROCESSING: 'bg-white/10 text-white/60 border-white/20',
+    EXPIRED: 'bg-red-500/20 text-red-500 border-red-500/30',
+    EXPIRING: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30',
   };
 
   const handleDelete = async () => {
-    if (window.confirm(`Are you sure you want to delete ${moa.companyName}?`)) {
+    if (confirm(`Are you sure you want to delete ${moa.companyName}?`)) {
       await softDeleteMOA(moa.id, moa.companyName);
-      onToast('MOA moved to trash');
+      onToast('MOA MOVED TO TRASH');
     }
   };
 
   const handleRecover = async () => {
     await recoverMOA(moa.id, moa.companyName);
-    onToast('MOA restored successfully');
+    onToast('MOA RESTORED SUCCESSFULLY');
   };
 
   return (
@@ -209,61 +210,61 @@ const MOACard: React.FC<{
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className={`bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden flex flex-col ${moa.isDeleted ? 'opacity-75 grayscale' : ''}`}
+      className={`glass-card rounded-[2rem] border-white/5 hover:border-white/20 transition-all duration-500 group overflow-hidden flex flex-col ${(moa.status === 'deleted' || moa.isDeleted) ? 'opacity-50 grayscale' : ''}`}
     >
-      <div className="p-6 flex-1">
-        <div className="flex justify-between items-start mb-4">
-          <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColors[moa.status]}`}>
-            {moa.status}
+      <div className="p-8 flex-1">
+        <div className="flex justify-between items-start mb-6">
+          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColors[moa.moaStatus]}`}>
+            {moa.moaStatus}
           </span>
-          <div className="flex gap-1">
-            {canEdit && !moa.isDeleted && (
-              <button onClick={onEdit} className="p-2 text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all">
-                <Edit2 size={16} />
+          <div className="flex gap-2">
+            {canEdit && !(moa.status === 'deleted' || moa.isDeleted) && (
+              <button onClick={onEdit} className="p-2.5 text-white/20 hover:text-neu-white hover:bg-white/10 rounded-xl transition-all">
+                <Edit2 size={18} />
               </button>
             )}
             {isAdmin && (
-              moa.isDeleted ? (
-                <button onClick={handleRecover} className="p-2 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
-                  <RotateCcw size={16} />
+              (moa.status === 'deleted' || moa.isDeleted) ? (
+                <button onClick={handleRecover} className="p-2.5 text-white/20 hover:text-neu-orange hover:bg-neu-orange/10 rounded-xl transition-all">
+                  <RotateCcw size={18} />
                 </button>
               ) : (
-                <button onClick={handleDelete} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
-                  <Trash2 size={16} />
+                <button onClick={handleDelete} className="p-2.5 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
+                  <Trash2 size={18} />
                 </button>
               )
             )}
           </div>
         </div>
 
-        <h3 className="text-xl font-bold text-stone-900 leading-tight mb-2">{moa.companyName}</h3>
-        <p className="text-xs text-stone-500 font-mono mb-4 flex items-center gap-1">
-          <Building size={12} /> {moa.hteid || 'NO HTEID'}
+        <h3 className="text-2xl font-normal text-neu-white tracking-tighter leading-none mb-3 group-hover:text-orange-gradient transition-all">{moa.companyName}</h3>
+        <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-6 flex items-center gap-2">
+          <Building size={14} className="text-neu-orange" /> <span className="font-normal">{moa.hteid || 'NO HTEID'}</span>
         </p>
 
-        <div className="space-y-3">
-          <div className="flex items-start gap-3 text-sm text-stone-600">
-            <MapPin size={16} className="mt-0.5 text-stone-400 shrink-0" />
+        <div className="space-y-4">
+          <div className="flex items-start gap-4 text-sm font-normal uppercase tracking-tighter text-white/60">
+            <MapPin size={18} className="mt-0.5 text-neu-orange shrink-0" />
             <span className="line-clamp-2">{moa.companyAddress}</span>
           </div>
-          <div className="flex items-center gap-3 text-sm text-stone-600">
-            <UserIcon size={16} className="text-stone-400 shrink-0" />
+          <div className="flex items-center gap-4 text-sm font-normal uppercase tracking-tighter text-white/60">
+            <UserIcon size={18} className="text-neu-orange shrink-0" />
             <span>{moa.contactPerson}</span>
           </div>
-          <div className="flex items-center gap-3 text-sm text-stone-600">
-            <Mail size={16} className="text-stone-400 shrink-0" />
-            <span className="truncate">{moa.contactPersonEmail}</span>
+          <div className="flex items-center gap-4 text-sm font-normal uppercase tracking-tighter text-white/60">
+            <Mail size={18} className="text-neu-orange shrink-0" />
+            <span className="truncate lowercase">{moa.contactPersonEmail}</span>
           </div>
         </div>
       </div>
 
       {!isStudent && (
-        <div className="px-6 py-4 bg-stone-50 border-t border-stone-100 flex justify-between items-center">
-          <div className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">
-            Effective: {moa.effectiveDate}
+        <div className="px-8 py-5 bg-white/5 border-t border-white/5 flex justify-between items-center">
+          <div className="text-[10px] text-white/20 uppercase tracking-widest font-black">
+            EFFECTIVE: <span className="text-white/60 font-normal">{moa.effectiveDate}</span>
           </div>
-          <div className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">
-            College: {moa.endorsedByCollege}
+          <div className="text-[10px] text-white/20 uppercase tracking-widest font-black">
+            COLLEGE: <span className="text-white/60 font-normal">{moa.endorsedByCollege}</span>
           </div>
         </div>
       )}
@@ -285,7 +286,7 @@ const MOAForm: React.FC<{
       industryType: '',
       effectiveDate: format(new Date(), 'yyyy-MM-dd'),
       expirationDate: format(new Date(), 'yyyy-MM-dd'),
-      status: 'PROCESSING',
+      moaStatus: 'PROCESSING',
       endorsedByCollege: '',
       hteid: '',
     }
@@ -312,155 +313,155 @@ const MOAForm: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-neu-black/80 backdrop-blur-xl z-[60] flex items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden"
+        className="glass-card w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border-white/10"
       >
-        <div className="p-8 border-b border-stone-100 flex justify-between items-center">
-          <h3 className="text-2xl font-bold">{moa ? 'Edit MOA Entry' : 'New MOA Entry'}</h3>
-          <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
-            <X size={24} />
+        <div className="p-10 border-b border-white/5 flex justify-between items-center bg-orange-gradient text-neu-white">
+          <h3 className="text-3xl font-black uppercase tracking-tighter">{moa ? 'Edit MOA Entry' : 'New MOA Entry'}</h3>
+          <button onClick={onClose} className="p-3 hover:bg-white/10 rounded-full transition-colors">
+            <X size={28} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 max-h-[70vh] overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Company Name</label>
+        <form onSubmit={handleSubmit} className="p-10 max-h-[70vh] overflow-y-auto space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-3 md:col-span-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Company Name</label>
               <input 
                 required
                 type="text" 
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-tighter text-neu-white"
                 value={formData.companyName}
                 onChange={e => setFormData({...formData, companyName: e.target.value})}
               />
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Company Address</label>
+            <div className="space-y-3 md:col-span-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Company Address</label>
               <textarea 
                 required
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500 min-h-[80px]"
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange min-h-[100px] font-normal uppercase tracking-tighter text-neu-white"
                 value={formData.companyAddress}
                 onChange={e => setFormData({...formData, companyAddress: e.target.value})}
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Contact Person</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Contact Person</label>
               <input 
                 required
                 type="text" 
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-tighter text-neu-white"
                 value={formData.contactPerson}
                 onChange={e => setFormData({...formData, contactPerson: e.target.value})}
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Contact Email</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Contact Email</label>
               <input 
                 required
                 type="email" 
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal tracking-tighter text-neu-white lowercase"
                 value={formData.contactPersonEmail}
                 onChange={e => setFormData({...formData, contactPersonEmail: e.target.value})}
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">HTEID</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">HTEID</label>
               <input 
                 type="text" 
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-tighter text-neu-white"
                 value={formData.hteid}
                 onChange={e => setFormData({...formData, hteid: e.target.value})}
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Industry Type</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Industry Type</label>
               <select 
                 required
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-widest text-xs text-neu-white cursor-pointer"
                 value={formData.industryType}
                 onChange={e => setFormData({...formData, industryType: e.target.value})}
               >
-                <option value="">Select Industry</option>
-                <option value="Technology">Technology</option>
-                <option value="Finance">Finance</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="Education">Education</option>
-                <option value="Services">Services</option>
-                <option value="Manufacturing">Manufacturing</option>
-                <option value="Telecomm">Telecomm</option>
-                <option value="Food">Food</option>
+                <option value="" className="bg-neu-black">Select Industry</option>
+                <option value="Technology" className="bg-neu-black">Technology</option>
+                <option value="Finance" className="bg-neu-black">Finance</option>
+                <option value="Healthcare" className="bg-neu-black">Healthcare</option>
+                <option value="Education" className="bg-neu-black">Education</option>
+                <option value="Services" className="bg-neu-black">Services</option>
+                <option value="Manufacturing" className="bg-neu-black">Manufacturing</option>
+                <option value="Telecomm" className="bg-neu-black">Telecomm</option>
+                <option value="Food" className="bg-neu-black">Food</option>
               </select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Effective Date</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Effective Date</label>
               <input 
                 required
                 type="date" 
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal text-neu-white"
                 value={formData.effectiveDate}
                 onChange={e => setFormData({...formData, effectiveDate: e.target.value})}
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Expiration Date</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Expiration Date</label>
               <input 
                 required
                 type="date" 
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal text-neu-white"
                 value={formData.expirationDate}
                 onChange={e => setFormData({...formData, expirationDate: e.target.value})}
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Status</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Status</label>
               <select 
                 required
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500"
-                value={formData.status}
-                onChange={e => setFormData({...formData, status: e.target.value as MOAStatus})}
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-widest text-xs text-neu-white cursor-pointer"
+                value={formData.moaStatus}
+                onChange={e => setFormData({...formData, moaStatus: e.target.value as MOAStatus})}
               >
-                <option value="APPROVED">Approved</option>
-                <option value="PROCESSING">Processing</option>
-                <option value="EXPIRED">Expired</option>
-                <option value="EXPIRING">Expiring</option>
+                <option value="APPROVED" className="bg-neu-black">Approved</option>
+                <option value="PROCESSING" className="bg-neu-black">Processing</option>
+                <option value="EXPIRED" className="bg-neu-black">Expired</option>
+                <option value="EXPIRING" className="bg-neu-black">Expiring</option>
               </select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Endorsed By College</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Endorsed By College</label>
               <input 
                 required
                 type="text" 
-                className="w-full px-4 py-3 bg-stone-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-tighter text-neu-white"
                 value={formData.endorsedByCollege}
                 onChange={e => setFormData({...formData, endorsedByCollege: e.target.value})}
               />
             </div>
           </div>
 
-          <div className="mt-10 flex gap-4">
+          <div className="mt-12 flex gap-4">
             <button 
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-4 rounded-2xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all"
+              className="flex-1 px-8 py-5 rounded-xl font-black uppercase tracking-tighter text-white/40 bg-white/5 hover:bg-white/10 transition-all border border-white/5"
             >
               Cancel
             </button>
             <button 
               type="submit"
               disabled={loading}
-              className="flex-[2] px-6 py-4 rounded-2xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 disabled:opacity-50"
+              className="flex-[2] px-8 py-5 rounded-xl font-black uppercase tracking-tighter text-neu-white bg-orange-gradient hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20 disabled:opacity-50"
             >
               {loading ? 'Saving...' : moa ? 'Update MOA' : 'Create MOA'}
             </button>

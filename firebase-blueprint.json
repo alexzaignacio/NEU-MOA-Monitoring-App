@@ -59,7 +59,7 @@
       "schema": "User",
       "description": "User profiles and permissions."
     },
-    "/moas/{moaId}": {
+    "/moa_records/{moaId}": {
       "schema": "MOA",
       "description": "MOA records."
     },
