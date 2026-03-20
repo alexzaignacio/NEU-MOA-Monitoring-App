@@ -47,7 +47,8 @@ service cloud.firestore {
     }
 
     function isNotBlocked() {
-      return getUserData().isBlocked != true;
+      let userPath = /databases/$(database)/documents/users/$(request.auth.uid);
+      return !exists(userPath) || get(userPath).data.isBlocked != true;
     }
 
     function canMaintainMOA() {

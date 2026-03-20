@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, updateProfile } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import { LogIn, Mail, Lock, AlertCircle, Loader2, UserPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { logGlobalAction } from '../services/moaService';
@@ -59,22 +60,78 @@ export const Login: React.FC = () => {
         if (displayName) {
           await updateProfile(userCredential.user, { displayName });
         }
+        
+        // Explicitly create user profile to ensure state persistence and correct display name
+        const profileRef = doc(db, 'users', userCredential.user.uid);
+        const adminEmails = ['jcesperanza@neu.edu.ph', 'alexzagayle.ignacio@neu.edu.ph'];
+        let role = 'student';
+        
+        if (adminEmails.includes(email)) {
+          role = 'admin';
+        } else if (email === 'faculty@neu.edu.ph') {
+          role = 'faculty';
+        } else if (email === 'student@neu.edu.ph') {
+          role = 'student';
+        }
+
+        await setDoc(profileRef, {
+          uid: userCredential.user.uid,
+          email: email,
+          displayName: displayName || email.split('@')[0],
+          role,
+          isBlocked: false,
+          canMaintainMOA: false,
+          createdAt: new Date().toISOString()
+        });
+
+        // Log sign up - firestore rules now allow this even if profile isn't fully ready
         await logGlobalAction('login', `New account created: ${email}`);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         await logGlobalAction('login', `User logged in via Email`);
       }
     } catch (error: any) {
-      console.error(error);
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        setError('Invalid email or password.');
-      } else if (error.code === 'auth/email-already-in-use') {
-        setError('This email is already registered.');
-      } else if (error.code === 'auth/weak-password') {
-        setError('Password should be at least 6 characters.');
+      console.error('Auth Error:', error);
+      let errorMessage = 'An error occurred during authentication.';
+      
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            errorMessage = 'Invalid email or password.';
+            break;
+          case 'auth/email-already-in-use':
+            errorMessage = 'This email is already registered.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'Password should be at least 6 characters.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Invalid email format.';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Network error. Please check your connection.';
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = 'Too many failed attempts. Please try again later.';
+            break;
+          default:
+            errorMessage = error.message || errorMessage;
+        }
       } else {
-        setError('An error occurred during authentication.');
+        // Handle Firestore errors or other non-auth errors
+        try {
+          // If it's a JSON string from handleFirestoreError
+          const parsed = JSON.parse(error.message);
+          if (parsed.error) {
+            errorMessage = `System Error: ${parsed.error}`;
+          }
+        } catch (e) {
+          errorMessage = error.message || errorMessage;
+        }
       }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
