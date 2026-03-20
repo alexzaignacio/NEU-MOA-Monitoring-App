@@ -55,11 +55,9 @@ service cloud.firestore {
     }
 
     function isValidMOA(data) {
-      return data.companyName is string && data.companyName.size() > 0 && data.companyName.size() < 200 &&
+      return data.companyName is string && 
              data.moaStatus in ['APPROVED', 'PROCESSING', 'EXPIRED', 'EXPIRING'] &&
              data.status in ['active', 'deleted'] &&
-             data.industryType is string &&
-             data.effectiveDate is string &&
              data.isDeleted is bool;
     }
 
@@ -98,7 +96,7 @@ service cloud.firestore {
     }
 
     match /audit_logs/{logId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || (isFaculty() && resource.data.type == 'global');
       allow create: if isAuthenticated() && isNotBlocked();
       allow update, delete: if false;
     }

@@ -30,8 +30,30 @@ export const logAction = async (
       userName: user.displayName || user.email,
       userEmail: user.email,
       operation,
+      type: 'specific',
       moaId,
       moaName,
+      timestamp: new Date().toISOString(),
+      details
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, 'audit_logs');
+  }
+};
+
+export const logGlobalAction = async (
+  operation: 'login' | 'logout',
+  details: string
+) => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    await addDoc(collection(db, 'audit_logs'), {
+      userName: user.displayName || user.email,
+      userEmail: user.email,
+      operation,
+      type: 'global',
       timestamp: new Date().toISOString(),
       details
     });

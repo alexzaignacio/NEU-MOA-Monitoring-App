@@ -89,7 +89,7 @@ const AppContent: React.FC = () => {
       case 'users':
         return isAdmin ? <UserManagement /> : <Dashboard moas={moas} />;
       case 'audit':
-        return isAdmin ? <AuditTrail /> : <Dashboard moas={moas} />;
+        return (isAdmin || profile?.role === 'faculty') ? <AuditTrail /> : <Dashboard moas={moas} />;
       case 'profile':
         return <Profile />;
       default:

@@ -42,9 +42,10 @@ export interface AuditLog {
   id: string;
   userName: string;
   userEmail: string;
-  operation: 'insert' | 'edit' | 'delete' | 'recover';
-  moaId: string;
-  moaName: string;
+  operation: 'insert' | 'edit' | 'delete' | 'recover' | 'login' | 'logout';
+  type: 'global' | 'specific';
+  moaId?: string;
+  moaName?: string;
   timestamp: string;
   details: string;
 }

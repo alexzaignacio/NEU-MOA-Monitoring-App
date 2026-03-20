@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../AuthContext';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
+import { logGlobalAction } from '../services/moaService';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -30,10 +31,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true },
     { id: 'moas', label: 'MOA Management', icon: FileText, show: true },
     { id: 'users', label: 'User Management', icon: Users, show: isAdmin },
-    { id: 'audit', label: 'Audit Trail', icon: ClipboardList, show: isAdmin },
+    { id: 'audit', label: 'Audit Trail', icon: ClipboardList, show: isAdmin || isFaculty },
   ];
 
-  const handleLogout = () => signOut(auth);
+  const handleLogout = async () => {
+    await logGlobalAction('logout', 'User signed out');
+    await signOut(auth);
+  };
 
   return (
     <div className="min-h-screen bg-neu-black flex flex-col md:flex-row font-sans text-neu-white overflow-hidden">

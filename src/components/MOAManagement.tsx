@@ -54,7 +54,11 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
       const matchesStatus = statusFilter === 'all' || m.moaStatus === statusFilter;
       const matchesCollege = collegeFilter === 'all' || m.endorsedByCollege === collegeFilter;
       const isDeleted = m.status === 'deleted' || m.isDeleted;
-      const matchesDeleted = showDeleted ? true : !isDeleted;
+      
+      // If showDeleted is true (Admin only), show ONLY deleted.
+      // Otherwise, show ONLY active.
+      // Faculty never see deleted.
+      const matchesDeleted = (isAdmin && showDeleted) ? isDeleted : !isDeleted;
 
       return matchesSearch && matchesStatus && matchesCollege && matchesDeleted;
     });
@@ -170,6 +174,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
             setIsFormOpen(false);
             showToast(msg);
           }}
+          onToast={showToast}
         />
       )}
     </div>
@@ -275,8 +280,9 @@ const MOACard: React.FC<{
 const MOAForm: React.FC<{ 
   moa: MOA | null, 
   onClose: () => void,
-  onSuccess: (msg: string) => void
-}> = ({ moa, onClose, onSuccess }) => {
+  onSuccess: (msg: string) => void,
+  onToast: (msg: string, type?: 'success' | 'error') => void
+}> = ({ moa, onClose, onSuccess, onToast }) => {
   const [formData, setFormData] = useState<Partial<MOA>>(
     moa || {
       companyName: '',
@@ -299,14 +305,23 @@ const MOAForm: React.FC<{
     try {
       if (moa) {
         await updateMOA(moa.id, formData);
-        onSuccess('MOA updated successfully');
+        onSuccess('MOA UPDATED SUCCESSFULLY');
       } else {
         await createMOA(formData);
-        onSuccess('MOA created successfully');
+        onSuccess('MOA CREATED SUCCESSFULLY');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Error saving MOA');
+      let errorMsg = 'ERROR SAVING MOA';
+      try {
+        const parsedError = JSON.parse(error.message);
+        if (parsedError.error.includes('insufficient permissions')) {
+          errorMsg = 'PERMISSION DENIED: YOU CANNOT PERFORM THIS ACTION';
+        }
+      } catch (e) {
+        // Not a JSON error
+      }
+      onToast(errorMsg, 'error');
     } finally {
       setLoading(false);
     }
@@ -317,151 +332,153 @@ const MOAForm: React.FC<{
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="glass-card w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border-white/10"
+        className="glass-card w-full max-w-[550px] max-h-[85vh] rounded-[2.5rem] shadow-2xl overflow-hidden border-white/10 flex flex-col"
       >
-        <div className="p-10 border-b border-white/5 flex justify-between items-center bg-orange-gradient text-neu-white">
-          <h3 className="text-3xl font-black uppercase tracking-tighter">{moa ? 'Edit MOA Entry' : 'New MOA Entry'}</h3>
-          <button onClick={onClose} className="p-3 hover:bg-white/10 rounded-full transition-colors">
-            <X size={28} />
+        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-orange-gradient text-neu-white shrink-0">
+          <h3 className="text-2xl font-black uppercase tracking-tighter">{moa ? 'Edit MOA Entry' : 'New MOA Entry'}</h3>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+            <X size={24} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-10 max-h-[70vh] overflow-y-auto space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-3 md:col-span-2">
+        <form onSubmit={handleSubmit} className="p-8 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
+          <div className="space-y-6">
+            <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Company Name</label>
               <input 
                 required
                 type="text" 
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-tighter text-neu-white"
+                className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal uppercase tracking-tighter text-neu-white transition-all"
                 value={formData.companyName}
                 onChange={e => setFormData({...formData, companyName: e.target.value})}
               />
             </div>
 
-            <div className="space-y-3 md:col-span-2">
+            <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Company Address</label>
               <textarea 
                 required
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange min-h-[100px] font-normal uppercase tracking-tighter text-neu-white"
+                className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none min-h-[100px] font-normal uppercase tracking-tighter text-neu-white transition-all"
                 value={formData.companyAddress}
                 onChange={e => setFormData({...formData, companyAddress: e.target.value})}
               />
             </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Contact Person</label>
-              <input 
-                required
-                type="text" 
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-tighter text-neu-white"
-                value={formData.contactPerson}
-                onChange={e => setFormData({...formData, contactPerson: e.target.value})}
-              />
-            </div>
+            <div className="grid grid-cols-1 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Contact Person</label>
+                <input 
+                  required
+                  type="text" 
+                  className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal uppercase tracking-tighter text-neu-white transition-all"
+                  value={formData.contactPerson}
+                  onChange={e => setFormData({...formData, contactPerson: e.target.value})}
+                />
+              </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Contact Email</label>
-              <input 
-                required
-                type="email" 
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal tracking-tighter text-neu-white lowercase"
-                value={formData.contactPersonEmail}
-                onChange={e => setFormData({...formData, contactPersonEmail: e.target.value})}
-              />
-            </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Contact Email</label>
+                <input 
+                  required
+                  type="email" 
+                  className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal tracking-tighter text-neu-white lowercase transition-all"
+                  value={formData.contactPersonEmail}
+                  onChange={e => setFormData({...formData, contactPersonEmail: e.target.value})}
+                />
+              </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">HTEID</label>
-              <input 
-                type="text" 
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-tighter text-neu-white"
-                value={formData.hteid}
-                onChange={e => setFormData({...formData, hteid: e.target.value})}
-              />
-            </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">HTEID</label>
+                <input 
+                  type="text" 
+                  className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal uppercase tracking-tighter text-neu-white transition-all"
+                  value={formData.hteid}
+                  onChange={e => setFormData({...formData, hteid: e.target.value})}
+                />
+              </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Industry Type</label>
-              <select 
-                required
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-widest text-xs text-neu-white cursor-pointer"
-                value={formData.industryType}
-                onChange={e => setFormData({...formData, industryType: e.target.value})}
-              >
-                <option value="" className="bg-neu-black">Select Industry</option>
-                <option value="Technology" className="bg-neu-black">Technology</option>
-                <option value="Finance" className="bg-neu-black">Finance</option>
-                <option value="Healthcare" className="bg-neu-black">Healthcare</option>
-                <option value="Education" className="bg-neu-black">Education</option>
-                <option value="Services" className="bg-neu-black">Services</option>
-                <option value="Manufacturing" className="bg-neu-black">Manufacturing</option>
-                <option value="Telecomm" className="bg-neu-black">Telecomm</option>
-                <option value="Food" className="bg-neu-black">Food</option>
-              </select>
-            </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Industry Type</label>
+                <select 
+                  required
+                  className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal uppercase tracking-widest text-xs text-neu-white cursor-pointer transition-all"
+                  value={formData.industryType}
+                  onChange={e => setFormData({...formData, industryType: e.target.value})}
+                >
+                  <option value="" className="bg-neu-black">Select Industry</option>
+                  <option value="Technology" className="bg-neu-black">Technology</option>
+                  <option value="Finance" className="bg-neu-black">Finance</option>
+                  <option value="Healthcare" className="bg-neu-black">Healthcare</option>
+                  <option value="Education" className="bg-neu-black">Education</option>
+                  <option value="Services" className="bg-neu-black">Services</option>
+                  <option value="Manufacturing" className="bg-neu-black">Manufacturing</option>
+                  <option value="Telecomm" className="bg-neu-black">Telecomm</option>
+                  <option value="Food" className="bg-neu-black">Food</option>
+                </select>
+              </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Effective Date</label>
-              <input 
-                required
-                type="date" 
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal text-neu-white"
-                value={formData.effectiveDate}
-                onChange={e => setFormData({...formData, effectiveDate: e.target.value})}
-              />
-            </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Effective Date</label>
+                <input 
+                  required
+                  type="date" 
+                  className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal text-neu-white transition-all"
+                  value={formData.effectiveDate}
+                  onChange={e => setFormData({...formData, effectiveDate: e.target.value})}
+                />
+              </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Expiration Date</label>
-              <input 
-                required
-                type="date" 
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal text-neu-white"
-                value={formData.expirationDate}
-                onChange={e => setFormData({...formData, expirationDate: e.target.value})}
-              />
-            </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Expiration Date</label>
+                <input 
+                  required
+                  type="date" 
+                  className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal text-neu-white transition-all"
+                  value={formData.expirationDate}
+                  onChange={e => setFormData({...formData, expirationDate: e.target.value})}
+                />
+              </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Status</label>
-              <select 
-                required
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-widest text-xs text-neu-white cursor-pointer"
-                value={formData.moaStatus}
-                onChange={e => setFormData({...formData, moaStatus: e.target.value as MOAStatus})}
-              >
-                <option value="APPROVED" className="bg-neu-black">Approved</option>
-                <option value="PROCESSING" className="bg-neu-black">Processing</option>
-                <option value="EXPIRED" className="bg-neu-black">Expired</option>
-                <option value="EXPIRING" className="bg-neu-black">Expiring</option>
-              </select>
-            </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Status</label>
+                <select 
+                  required
+                  className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal uppercase tracking-widest text-xs text-neu-white cursor-pointer transition-all"
+                  value={formData.moaStatus}
+                  onChange={e => setFormData({...formData, moaStatus: e.target.value as MOAStatus})}
+                >
+                  <option value="APPROVED" className="bg-neu-black">Approved</option>
+                  <option value="PROCESSING" className="bg-neu-black">Processing</option>
+                  <option value="EXPIRED" className="bg-neu-black">Expired</option>
+                  <option value="EXPIRING" className="bg-neu-black">Expiring</option>
+                </select>
+              </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Endorsed By College</label>
-              <input 
-                required
-                type="text" 
-                className="w-full px-6 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange font-normal uppercase tracking-tighter text-neu-white"
-                value={formData.endorsedByCollege}
-                onChange={e => setFormData({...formData, endorsedByCollege: e.target.value})}
-              />
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Endorsed By College</label>
+                <input 
+                  required
+                  type="text" 
+                  className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal uppercase tracking-tighter text-neu-white transition-all"
+                  value={formData.endorsedByCollege}
+                  onChange={e => setFormData({...formData, endorsedByCollege: e.target.value})}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="mt-12 flex gap-4">
+          <div className="pt-6 flex gap-4 sticky bottom-0 bg-neu-black/50 backdrop-blur-md mt-auto">
             <button 
               type="button"
               onClick={onClose}
-              className="flex-1 px-8 py-5 rounded-xl font-black uppercase tracking-tighter text-white/40 bg-white/5 hover:bg-white/10 transition-all border border-white/5"
+              className="flex-1 px-6 py-4 rounded-xl font-black uppercase tracking-tighter text-white/40 bg-white/5 hover:bg-white/10 transition-all border border-white/5"
             >
               Cancel
             </button>
             <button 
               type="submit"
               disabled={loading}
-              className="flex-[2] px-8 py-5 rounded-xl font-black uppercase tracking-tighter text-neu-white bg-orange-gradient hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20 disabled:opacity-50"
+              className="flex-[2] px-6 py-4 rounded-xl font-black uppercase tracking-tighter text-neu-white bg-orange-gradient hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20 disabled:opacity-50"
             >
               {loading ? 'Saving...' : moa ? 'Update MOA' : 'Create MOA'}
             </button>

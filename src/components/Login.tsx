@@ -3,6 +3,7 @@ import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPass
 import { auth, googleProvider } from '../firebase';
 import { LogIn, Mail, Lock, AlertCircle, Loader2, UserPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { logGlobalAction } from '../services/moaService';
 
 export const Login: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -25,6 +26,8 @@ export const Login: React.FC = () => {
       if (user.email && !validateEmail(user.email)) {
         await auth.signOut();
         setError('Only institutional emails (@neu.edu.ph) are allowed.');
+      } else {
+        await logGlobalAction('login', `User logged in via Google`);
       }
     } catch (error: any) {
       console.error(error);
@@ -56,8 +59,10 @@ export const Login: React.FC = () => {
         if (displayName) {
           await updateProfile(userCredential.user, { displayName });
         }
+        await logGlobalAction('login', `New account created: ${email}`);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
+        await logGlobalAction('login', `User logged in via Email`);
       }
     } catch (error: any) {
       console.error(error);
@@ -126,34 +131,34 @@ export const Login: React.FC = () => {
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-8 bg-neu-black relative overflow-hidden">
+      <div className="flex-1 flex items-center justify-center p-4 md:p-6 bg-neu-black relative overflow-hidden">
         {/* Background Accent */}
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-neu-orange/10 blur-[120px] rounded-full -z-10" />
         
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md max-h-screen overflow-y-auto py-8"
+          className="w-full max-w-md flex flex-col justify-center relative z-20"
         >
           {/* Mobile Header */}
-          <div className="md:hidden flex flex-col items-center mb-8">
+          <div className="md:hidden flex flex-col items-center mb-6">
             <img 
               src="https://upload.wikimedia.org/wikipedia/en/c/c6/New_Era_University.svg" 
               alt="NEU Logo" 
-              className="w-20 h-20 mb-4 drop-shadow-[0_0_10px_rgba(255,77,0,0.3)]"
+              className="w-16 h-16 mb-2 drop-shadow-[0_0_10px_rgba(255,77,0,0.3)]"
               referrerPolicy="no-referrer"
             />
-            <h1 className="text-2xl font-black text-neu-white uppercase tracking-tighter">NEU MOA</h1>
+            <h1 className="text-xl font-black text-neu-white uppercase tracking-tighter">NEU MOA</h1>
           </div>
 
-          <div className="glass-card p-8 md:p-10 rounded-[2rem] shadow-2xl relative overflow-hidden">
+          <div className="glass-card p-6 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden max-w-md mx-auto">
             <div className="absolute top-0 left-0 w-full h-1 bg-orange-gradient" />
             
-            <div className="mb-8">
-              <h2 className="text-3xl font-black text-neu-white uppercase tracking-tighter leading-none mb-2">
+            <div className="mb-6">
+              <h2 className="text-2xl font-black text-neu-white uppercase tracking-tighter leading-none mb-1">
                 {isSignUp ? 'Sign Up' : 'Sign In'}
               </h2>
-              <p className="text-white/40 font-bold text-xs uppercase tracking-widest">
+              <p className="text-white/40 font-bold text-[10px] uppercase tracking-widest">
                 {isSignUp ? 'Create your account' : 'Access the Monitoring Portal'}
               </p>
             </div>
@@ -164,9 +169,9 @@ export const Login: React.FC = () => {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-400 text-sm"
+                  className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-400 text-xs"
                 >
-                  <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                  <AlertCircle size={16} className="shrink-0 mt-0.5" />
                   <p className="font-medium">{error}</p>
                 </motion.div>
               )}
@@ -175,17 +180,17 @@ export const Login: React.FC = () => {
             <button 
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 bg-neu-white text-neu-black px-6 py-3.5 rounded-xl font-black uppercase tracking-tighter hover:bg-white/90 transition-all shadow-xl disabled:opacity-70 mb-6"
+              className="w-full flex items-center justify-center gap-3 bg-neu-white text-neu-black px-6 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-white/90 transition-all shadow-xl disabled:opacity-70 mb-4 text-sm"
             >
               {loading ? (
-                <Loader2 size={20} className="animate-spin" />
+                <Loader2 size={18} className="animate-spin" />
               ) : (
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-4 h-4" />
               )}
               {isSignUp ? 'SIGN UP WITH GOOGLE' : 'SIGN IN WITH GOOGLE'}
             </button>
 
-            <div className="relative my-8">
+            <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-white/10"></div>
               </div>
@@ -194,61 +199,61 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
-            <form onSubmit={handleAuth} className="space-y-4">
+            <form onSubmit={handleAuth} className="space-y-3">
               {isSignUp && (
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-orange-gradient opacity-0 group-focus-within:opacity-10 blur-xl transition-opacity rounded-xl" />
-                  <LogIn className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-neu-orange transition-colors" size={18} />
+                  <div className="absolute inset-0 bg-orange-gradient opacity-0 group-focus-within:opacity-10 blur-xl transition-opacity rounded-xl pointer-events-none" />
+                  <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-neu-orange transition-colors" size={16} />
                   <input 
                     type="text"
                     placeholder="Full Name"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     required
-                    className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-neu-white font-normal placeholder:text-white/20 focus:border-neu-orange outline-none transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-neu-white font-normal text-sm placeholder:text-white/20 focus:border-neu-orange outline-none transition-all relative z-10"
                   />
                 </div>
               )}
               <div className="relative group">
-                <div className="absolute inset-0 bg-orange-gradient opacity-0 group-focus-within:opacity-10 blur-xl transition-opacity rounded-xl" />
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-neu-orange transition-colors" size={18} />
+                <div className="absolute inset-0 bg-orange-gradient opacity-0 group-focus-within:opacity-10 blur-xl transition-opacity rounded-xl pointer-events-none" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-neu-orange transition-colors" size={16} />
                 <input 
                   type="email"
                   placeholder="Institutional Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-neu-white font-normal placeholder:text-white/20 focus:border-neu-orange outline-none transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-neu-white font-normal text-sm placeholder:text-white/20 focus:border-neu-orange outline-none transition-all relative z-10"
                 />
               </div>
               <div className="relative group">
-                <div className="absolute inset-0 bg-orange-gradient opacity-0 group-focus-within:opacity-10 blur-xl transition-opacity rounded-xl" />
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-neu-orange transition-colors" size={18} />
+                <div className="absolute inset-0 bg-orange-gradient opacity-0 group-focus-within:opacity-10 blur-xl transition-opacity rounded-xl pointer-events-none" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-neu-orange transition-colors" size={16} />
                 <input 
                   type="password"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-neu-white font-normal placeholder:text-white/20 focus:border-neu-orange outline-none transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-neu-white font-normal text-sm placeholder:text-white/20 focus:border-neu-orange outline-none transition-all relative z-10"
                 />
               </div>
 
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full bg-orange-gradient text-neu-white py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20 disabled:opacity-70 mt-4"
+                className="w-full bg-orange-gradient text-neu-white py-3.5 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20 disabled:opacity-70 mt-2 text-sm"
               >
                 {loading ? (
-                  <Loader2 size={20} className="animate-spin mx-auto" />
+                  <Loader2 size={18} className="animate-spin mx-auto" />
                 ) : (
                   isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN WITH EMAIL'
                 )}
               </button>
             </form>
 
-            <div className="mt-8 text-center">
-              <p className="text-xs text-white/40 font-bold uppercase tracking-widest">
+            <div className="mt-6 text-center">
+              <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
                 {isSignUp ? 'Already have an account?' : 'Need an account?'} 
                 <span 
                   onClick={() => setIsSignUp(!isSignUp)}
@@ -260,7 +265,7 @@ export const Login: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.2em] flex flex-wrap justify-center gap-x-6 gap-y-2">
               <span className="hover:text-white/40 cursor-pointer transition-colors">Terms of Service</span>
               <span className="hover:text-white/40 cursor-pointer transition-colors">Privacy Policy</span>
