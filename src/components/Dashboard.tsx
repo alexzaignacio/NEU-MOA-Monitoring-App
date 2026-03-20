@@ -40,11 +40,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
   return (
     <div className="space-y-12">
       <header>
-        <h2 className="text-5xl font-black tracking-tighter text-neu-white uppercase leading-none">
+        <h2 className="text-5xl font-medium tracking-tighter text-neu-white uppercase leading-none">
           WE'VE SCALED <br />
           <span className="text-orange-gradient">CHANNELS</span>
         </h2>
-        <p className="text-white/40 mt-4 font-bold uppercase tracking-widest text-sm">Real-time system monitoring & analytics</p>
+        <p className="text-white/40 mt-4 font-medium uppercase tracking-widest text-sm">Real-time system monitoring & analytics</p>
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -61,10 +61,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
             </div>
             
             <div className="relative z-10">
-              <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-4">{card.label}</p>
+              <p className="text-white/30 text-[10px] font-medium uppercase tracking-[0.2em] mb-4">{card.label}</p>
               <div className="flex items-baseline gap-2">
-                <h3 className="text-5xl font-black text-neu-white tracking-tighter">{card.value}</h3>
-                <span className={`text-[10px] font-black ${card.trend.startsWith('+') ? 'text-neu-orange' : 'text-white/20'}`}>
+                <h3 className="text-5xl font-medium text-neu-white tracking-tighter">{card.value}</h3>
+                <span className={`text-[10px] font-medium ${card.trend.startsWith('+') ? 'text-neu-orange' : 'text-white/20'}`}>
                   {card.trend}
                 </span>
               </div>
@@ -91,7 +91,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
           className="glass-card p-10 rounded-[2.5rem]"
         >
           <div className="flex items-center justify-between mb-10">
-            <h3 className="text-2xl font-black uppercase tracking-tighter text-neu-white">
+            <h3 className="text-2xl font-medium uppercase tracking-tighter text-neu-white">
               Industry Distribution
             </h3>
             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-neu-orange">
@@ -131,7 +131,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
           className="glass-card p-10 rounded-[2.5rem]"
         >
           <div className="flex items-center justify-between mb-10">
-            <h3 className="text-2xl font-black uppercase tracking-tighter text-neu-white">
+            <h3 className="text-2xl font-medium uppercase tracking-tighter text-neu-white">
               By College
             </h3>
             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-neu-orange">

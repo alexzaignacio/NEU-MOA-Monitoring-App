@@ -171,7 +171,7 @@ export const Login: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
-              className="text-6xl font-black mb-4 tracking-tighter leading-none uppercase"
+              className="text-6xl font-medium mb-4 tracking-tighter leading-none uppercase"
             >
               WE'VE SCALED <br />
               <span className="text-orange-gradient">MONITORING</span> <br />
@@ -208,7 +208,7 @@ export const Login: React.FC = () => {
               className="w-16 h-16 mb-2 drop-shadow-[0_0_10px_rgba(255,77,0,0.3)]"
               referrerPolicy="no-referrer"
             />
-            <h1 className="text-xl font-black text-neu-white uppercase tracking-tighter">NEU MOA</h1>
+            <h1 className="text-xl font-medium text-neu-white uppercase tracking-tighter">NEU MOA</h1>
           </div>
 
           <div className="glass-card p-6 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden max-w-md mx-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
@@ -240,7 +240,7 @@ export const Login: React.FC = () => {
             <button 
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 bg-neu-white text-neu-black px-6 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-white/90 transition-all shadow-xl disabled:opacity-70 mb-4 text-sm"
+              className="w-full flex items-center justify-center gap-3 bg-neu-white text-neu-black px-6 py-3 rounded-xl font-medium uppercase tracking-tighter hover:bg-white/90 transition-all shadow-xl disabled:opacity-70 mb-4 text-sm"
             >
               {loading ? (
                 <Loader2 size={18} className="animate-spin" />
@@ -255,7 +255,7 @@ export const Login: React.FC = () => {
                 <div className="w-full border-t border-white/10"></div>
               </div>
               <div className="relative flex justify-center text-[10px] uppercase">
-                <span className="bg-[#111] px-4 text-white/30 font-black tracking-[0.3em]">OR</span>
+                <span className="bg-[#111] px-4 text-white/30 font-medium tracking-[0.3em]">OR</span>
               </div>
             </div>
 
@@ -309,7 +309,7 @@ export const Login: React.FC = () => {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full bg-orange-gradient text-neu-white py-3.5 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20 disabled:opacity-70 mt-2 text-sm"
+                className="w-full bg-orange-gradient text-neu-white py-3.5 rounded-xl font-medium uppercase tracking-tighter hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20 disabled:opacity-70 mt-2 text-sm"
               >
                 {loading ? (
                   <Loader2 size={18} className="animate-spin mx-auto" />
@@ -333,7 +333,7 @@ export const Login: React.FC = () => {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.2em] flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <p className="text-[10px] text-white/20 font-medium uppercase tracking-[0.2em] flex flex-wrap justify-center gap-x-6 gap-y-2">
               <span className="hover:text-white/40 cursor-pointer transition-colors">Terms of Service</span>
               <span className="hover:text-white/40 cursor-pointer transition-colors">Privacy Policy</span>
               <span className="hover:text-white/40 cursor-pointer transition-colors">© 2026 NEU</span>

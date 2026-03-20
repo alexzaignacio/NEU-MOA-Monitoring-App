@@ -66,17 +66,17 @@ export const AuditTrail: React.FC = () => {
   return (
     <div className="space-y-12">
       <header>
-        <h2 className="text-5xl font-black tracking-tighter text-neu-white uppercase leading-none">Audit Trail</h2>
-        <p className="text-white/40 font-black uppercase tracking-widest text-xs mt-2">Track all system operations and user actions.</p>
+        <h2 className="text-5xl font-medium tracking-tighter text-neu-white uppercase leading-none">Audit Trail</h2>
+        <p className="text-white/40 font-medium uppercase tracking-widest text-xs mt-2">Track all system operations and user actions.</p>
       </header>
 
       <div className="glass-card rounded-[2.5rem] border-white/5 shadow-2xl overflow-hidden">
         <div className="p-8 bg-orange-gradient border-b border-white/10 flex items-center justify-between text-neu-white">
-          <div className="flex items-center gap-3 font-black uppercase tracking-widest text-xs">
+          <div className="flex items-center gap-3 font-medium uppercase tracking-widest text-xs">
             <History size={20} className="text-neu-white" />
             Recent Activity
           </div>
-          <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">
+          <span className="text-[10px] text-white/60 font-medium uppercase tracking-widest">
             {isFaculty ? 'Showing global system logs' : 'Showing last 100 operations'}
           </span>
         </div>
@@ -96,12 +96,12 @@ export const AuditTrail: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className="font-normal text-neu-white uppercase tracking-tighter text-lg leading-none">{log.userName}</span>
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getOperationColor(log.operation)}`}>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-widest border ${getOperationColor(log.operation)}`}>
                       {log.operation}
                     </span>
                     {log.moaName && (
                       <>
-                        <span className="text-white/20 text-[10px] font-black uppercase tracking-widest">on</span>
+                        <span className="text-white/20 text-[10px] font-medium uppercase tracking-widest">on</span>
                         <span className="font-normal text-neu-white uppercase tracking-tighter text-lg leading-none">{log.moaName}</span>
                       </>
                     )}
@@ -115,11 +115,11 @@ export const AuditTrail: React.FC = () => {
               <div className="flex items-center gap-8 text-white/20 shrink-0">
                 <div className="flex items-center gap-3">
                   <Calendar size={16} className="text-neu-orange/40" />
-                  <span className="text-xs font-black uppercase tracking-widest">{format(parseISO(log.timestamp), 'MMM dd, yyyy')}</span>
+                  <span className="text-xs font-medium uppercase tracking-widest">{format(parseISO(log.timestamp), 'MMM dd, yyyy')}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock size={16} className="text-neu-orange/40" />
-                  <span className="text-xs font-black uppercase tracking-widest">{format(parseISO(log.timestamp), 'HH:mm:ss')}</span>
+                  <span className="text-xs font-medium uppercase tracking-widest">{format(parseISO(log.timestamp), 'HH:mm:ss')}</span>
                 </div>
               </div>
             </motion.div>
@@ -128,7 +128,7 @@ export const AuditTrail: React.FC = () => {
           {logs.length === 0 && !loading && (
             <div className="py-32 text-center text-white/20">
               <ClipboardList size={80} className="mx-auto mb-6 opacity-10" />
-              <p className="font-black uppercase tracking-widest">No audit logs found.</p>
+              <p className="font-medium uppercase tracking-widest">No audit logs found.</p>
             </div>
           )}
         </div>

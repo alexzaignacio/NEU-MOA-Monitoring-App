@@ -89,14 +89,14 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-5xl font-black tracking-tighter text-neu-white uppercase leading-none">MOA Records</h2>
-          <p className="text-white/40 font-black uppercase tracking-widest text-xs mt-2">Manage and track all Memoranda of Agreement.</p>
+          <h2 className="text-5xl font-medium tracking-tighter text-neu-white uppercase leading-none">MOA Records</h2>
+          <p className="text-white/40 font-medium uppercase tracking-widest text-xs mt-2">Manage and track all Memoranda of Agreement.</p>
         </div>
         
         {canMaintain && (
           <button 
             onClick={() => handleOpenForm()}
-            className="flex items-center justify-center gap-2 bg-orange-gradient text-neu-white px-8 py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20"
+            className="flex items-center justify-center gap-2 bg-orange-gradient text-neu-white px-8 py-4 rounded-xl font-medium uppercase tracking-tighter hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20"
           >
             <Plus size={20} />
             Add New MOA
@@ -110,7 +110,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
           <input 
             type="text" 
             placeholder="SEARCH COMPANY, CONTACT, OR HTEID..." 
-            className="w-full pl-12 pr-4 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange transition-all font-black uppercase tracking-tighter text-neu-white placeholder:text-white/20"
+            className="w-full pl-12 pr-4 py-4 bg-white/5 border-none rounded-xl focus:ring-2 focus:ring-neu-orange transition-all font-medium uppercase tracking-tighter text-neu-white placeholder:text-white/20"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -118,7 +118,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
         
         <div className="flex gap-2">
           <select 
-            className="bg-white/5 border-none rounded-xl px-6 py-4 focus:ring-2 focus:ring-neu-orange transition-all text-xs font-black uppercase tracking-widest text-neu-white cursor-pointer"
+            className="bg-white/5 border-none rounded-xl px-6 py-4 focus:ring-2 focus:ring-neu-orange transition-all text-xs font-medium uppercase tracking-widest text-neu-white cursor-pointer"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -132,7 +132,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
           {isAdmin && (
             <button 
               onClick={() => setShowDeleted(!showDeleted)}
-              className={`px-6 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              className={`px-6 py-4 rounded-xl text-xs font-medium uppercase tracking-widest transition-all ${
                 showDeleted ? 'bg-neu-orange text-neu-white' : 'bg-white/5 text-white/40 hover:text-white/60'
               }`}
             >
@@ -161,7 +161,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
         <div className="text-center py-24 glass-card rounded-[2.5rem] border-dashed border-white/10">
           <div className="flex flex-col items-center">
             <FileText size={64} className="mx-auto text-white/10 mb-6" />
-            <p className="text-white/40 font-black uppercase tracking-widest">No MOA records found matching your criteria.</p>
+            <p className="text-white/40 font-medium uppercase tracking-widest">No MOA records found matching your criteria.</p>
           </div>
         </div>
       )}
@@ -219,31 +219,30 @@ const MOACard: React.FC<{
     >
       <div className="p-8 flex-1">
         <div className="flex justify-between items-start mb-6">
-          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColors[moa.moaStatus]}`}>
+          <span className={`px-4 py-1.5 rounded-full text-[10px] font-medium uppercase tracking-widest border ${statusColors[moa.moaStatus]}`}>
             {moa.moaStatus}
           </span>
           <div className="flex gap-2">
             {canEdit && !(moa.status === 'deleted' || moa.isDeleted) && (
-              <button onClick={onEdit} className="p-2.5 text-white/20 hover:text-neu-white hover:bg-white/10 rounded-xl transition-all">
-                <Edit2 size={18} />
-              </button>
-            )}
-            {isAdmin && (
-              (moa.status === 'deleted' || moa.isDeleted) ? (
-                <button onClick={handleRecover} className="p-2.5 text-white/20 hover:text-neu-orange hover:bg-neu-orange/10 rounded-xl transition-all">
-                  <RotateCcw size={18} />
+              <>
+                <button onClick={onEdit} className="p-2.5 text-white/20 hover:text-neu-white hover:bg-white/10 rounded-xl transition-all">
+                  <Edit2 size={18} />
                 </button>
-              ) : (
                 <button onClick={handleDelete} className="p-2.5 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
                   <Trash2 size={18} />
                 </button>
-              )
+              </>
+            )}
+            {isAdmin && (moa.status === 'deleted' || moa.isDeleted) && (
+              <button onClick={handleRecover} className="p-2.5 text-white/20 hover:text-neu-orange hover:bg-neu-orange/10 rounded-xl transition-all">
+                <RotateCcw size={18} />
+              </button>
             )}
           </div>
         </div>
 
         <h3 className="text-2xl font-normal text-neu-white tracking-tighter leading-none mb-3 group-hover:text-orange-gradient transition-all">{moa.companyName}</h3>
-        <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-6 flex items-center gap-2">
+        <p className="text-xs font-medium text-white/40 uppercase tracking-widest mb-6 flex items-center gap-2">
           <Building size={14} className="text-neu-orange" /> <span className="font-normal">{moa.hteid || 'NO HTEID'}</span>
         </p>
 
@@ -265,10 +264,10 @@ const MOACard: React.FC<{
 
       {!isStudent && (
         <div className="px-8 py-5 bg-white/5 border-t border-white/5 flex justify-between items-center">
-          <div className="text-[10px] text-white/20 uppercase tracking-widest font-black">
+          <div className="text-[10px] text-white/20 uppercase tracking-widest font-medium">
             EFFECTIVE: <span className="text-white/60 font-normal">{moa.effectiveDate}</span>
           </div>
-          <div className="text-[10px] text-white/20 uppercase tracking-widest font-black">
+          <div className="text-[10px] text-white/20 uppercase tracking-widest font-medium">
             COLLEGE: <span className="text-white/60 font-normal">{moa.endorsedByCollege}</span>
           </div>
         </div>
@@ -335,7 +334,7 @@ const MOAForm: React.FC<{
         className="glass-card w-full max-w-[550px] max-h-[85vh] rounded-[2.5rem] shadow-2xl overflow-hidden border-white/10 flex flex-col"
       >
         <div className="p-8 border-b border-white/5 flex justify-between items-center bg-orange-gradient text-neu-white shrink-0">
-          <h3 className="text-2xl font-black uppercase tracking-tighter">{moa ? 'Edit MOA Entry' : 'New MOA Entry'}</h3>
+          <h3 className="text-2xl font-medium uppercase tracking-tighter">{moa ? 'Edit MOA Entry' : 'New MOA Entry'}</h3>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <X size={24} />
           </button>
@@ -344,7 +343,7 @@ const MOAForm: React.FC<{
         <form onSubmit={handleSubmit} className="p-8 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Company Name</label>
+              <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">Company Name</label>
               <input 
                 required
                 type="text" 
@@ -355,7 +354,7 @@ const MOAForm: React.FC<{
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Company Address</label>
+              <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">Company Address</label>
               <textarea 
                 required
                 className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none min-h-[100px] font-normal uppercase tracking-tighter text-neu-white transition-all"
@@ -366,7 +365,7 @@ const MOAForm: React.FC<{
 
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Contact Person</label>
+                <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">Contact Person</label>
                 <input 
                   required
                   type="text" 
@@ -377,7 +376,7 @@ const MOAForm: React.FC<{
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Contact Email</label>
+                <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">Contact Email</label>
                 <input 
                   required
                   type="email" 
@@ -388,7 +387,7 @@ const MOAForm: React.FC<{
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">HTEID</label>
+                <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">HTEID</label>
                 <input 
                   type="text" 
                   className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal uppercase tracking-tighter text-neu-white transition-all"
@@ -398,7 +397,7 @@ const MOAForm: React.FC<{
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Industry Type</label>
+                <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">Industry Type</label>
                 <select 
                   required
                   className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal uppercase tracking-widest text-xs text-neu-white cursor-pointer transition-all"
@@ -418,7 +417,7 @@ const MOAForm: React.FC<{
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Effective Date</label>
+                <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">Effective Date</label>
                 <input 
                   required
                   type="date" 
@@ -429,7 +428,7 @@ const MOAForm: React.FC<{
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Expiration Date</label>
+                <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">Expiration Date</label>
                 <input 
                   required
                   type="date" 
@@ -440,7 +439,7 @@ const MOAForm: React.FC<{
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Status</label>
+                <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">Status</label>
                 <select 
                   required
                   className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-neu-orange outline-none font-normal uppercase tracking-widest text-xs text-neu-white cursor-pointer transition-all"
@@ -455,7 +454,7 @@ const MOAForm: React.FC<{
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Endorsed By College</label>
+                <label className="text-[10px] font-medium uppercase tracking-widest text-white/40 ml-1">Endorsed By College</label>
                 <input 
                   required
                   type="text" 
@@ -471,14 +470,14 @@ const MOAForm: React.FC<{
             <button 
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-4 rounded-xl font-black uppercase tracking-tighter text-white/40 bg-white/5 hover:bg-white/10 transition-all border border-white/5"
+              className="flex-1 px-6 py-4 rounded-xl font-medium uppercase tracking-tighter text-white/40 bg-white/5 hover:bg-white/10 transition-all border border-white/5"
             >
               Cancel
             </button>
             <button 
               type="submit"
               disabled={loading}
-              className="flex-[2] px-6 py-4 rounded-xl font-black uppercase tracking-tighter text-neu-white bg-orange-gradient hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20 disabled:opacity-50"
+              className="flex-[2] px-6 py-4 rounded-xl font-medium uppercase tracking-tighter text-neu-white bg-orange-gradient hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20 disabled:opacity-50"
             >
               {loading ? 'Saving...' : moa ? 'Update MOA' : 'Create MOA'}
             </button>

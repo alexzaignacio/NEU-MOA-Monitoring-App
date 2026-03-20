@@ -67,11 +67,11 @@ const AppContent: React.FC = () => {
           <div className="w-20 h-20 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-8">
             <ShieldAlert size={40} />
           </div>
-          <h1 className="text-3xl font-bold text-stone-900 mb-4">Access Restricted</h1>
+          <h1 className="text-3xl font-medium text-stone-900 mb-4">Access Restricted</h1>
           <p className="text-stone-500 mb-8">Your account has been blocked from accessing the system. Please contact the administrator for more information.</p>
           <button 
             onClick={() => window.location.reload()}
-            className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold"
+            className="w-full py-4 bg-stone-900 text-white rounded-2xl font-medium"
           >
             Try Again
           </button>

@@ -31,7 +31,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true },
     { id: 'moas', label: 'MOA Management', icon: FileText, show: true },
     { id: 'users', label: 'User Management', icon: Users, show: isAdmin },
-    { id: 'audit', label: 'Audit Trail', icon: ClipboardList, show: isAdmin || isFaculty },
+    { id: 'audit', label: 'Audit Trail', icon: ClipboardList, show: isAdmin },
   ];
 
   const handleLogout = async () => {
@@ -48,8 +48,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
             <ShieldCheck size={28} />
           </div>
           <div>
-            <h1 className="font-black text-xl leading-none tracking-tighter text-white uppercase">NEU MOA</h1>
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] font-black mt-1">Monitoring</p>
+            <h1 className="font-medium text-xl leading-none tracking-tighter text-white uppercase">NEU MOA</h1>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] font-medium mt-1">Monitoring</p>
           </div>
         </div>
 
@@ -60,7 +60,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group relative overflow-hidden ${
                 activeTab === item.id 
-                  ? 'bg-white/5 text-white font-black shadow-xl border border-white/10' 
+                  ? 'bg-white/5 text-white font-medium shadow-xl border border-white/10' 
                   : 'text-white/30 hover:bg-white/5 hover:text-white/60'
               }`}
             >
@@ -86,7 +86,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                 className="absolute bottom-full left-0 w-full mb-6 glass-card border border-white/10 rounded-[2rem] shadow-2xl p-3 z-50 overflow-hidden"
               >
                 <div className="px-5 py-4 border-b border-white/5 mb-2">
-                  <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Account Settings</p>
+                  <p className="text-[10px] font-medium text-white/20 uppercase tracking-[0.3em]">Account Settings</p>
                 </div>
                 <button
                   onClick={() => {
@@ -94,18 +94,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                     setIsProfileDropdownOpen(false);
                   }}
                   className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all ${
-                    activeTab === 'profile' ? 'bg-orange-gradient text-white font-black' : 'hover:bg-white/5 text-white/60'
+                    activeTab === 'profile' ? 'bg-orange-gradient text-white font-medium' : 'hover:bg-white/5 text-white/60'
                   }`}
                 >
                   <UserCircle size={20} className={activeTab === 'profile' ? 'text-white' : 'text-neu-orange'} />
-                  <span className="text-xs uppercase font-black tracking-widest">Profile</span>
+                  <span className="text-xs uppercase font-medium tracking-widest">Profile</span>
                 </button>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl hover:bg-red-500/10 text-red-500 transition-all mt-1"
                 >
                   <LogOut size={20} />
-                  <span className="text-xs uppercase font-black tracking-widest">Sign Out</span>
+                  <span className="text-xs uppercase font-medium tracking-widest">Sign Out</span>
                 </button>
               </motion.div>
             )}
@@ -117,12 +117,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               isProfileDropdownOpen ? 'bg-white/5 border-white/10' : 'hover:bg-white/5'
             }`}
           >
-            <div className="w-12 h-12 rounded-2xl bg-orange-gradient flex items-center justify-center text-white font-black shrink-0 shadow-xl shadow-neu-orange/20 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-orange-gradient flex items-center justify-center text-white font-medium shrink-0 shadow-xl shadow-neu-orange/20 group-hover:scale-105 transition-transform">
               {profile?.displayName?.[0] || profile?.email?.[0]?.toUpperCase()}
             </div>
             <div className="overflow-hidden text-left flex-1">
-              <p className="font-black truncate text-sm text-white uppercase tracking-tighter">{profile?.displayName || 'User'}</p>
-              <p className="text-[10px] text-white/20 uppercase font-black tracking-[0.2em] mt-0.5">{profile?.role}</p>
+              <p className="font-medium truncate text-sm text-white uppercase tracking-tighter">{profile?.displayName || 'User'}</p>
+              <p className="text-[10px] text-white/20 uppercase font-medium tracking-[0.2em] mt-0.5">{profile?.role}</p>
             </div>
           </button>
         </div>
@@ -134,7 +134,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           <div className="w-10 h-10 bg-orange-gradient rounded-xl flex items-center justify-center text-white shadow-lg">
             <ShieldCheck size={22} />
           </div>
-          <h1 className="font-black tracking-tighter uppercase text-lg">NEU MOA</h1>
+          <h1 className="font-medium tracking-tighter uppercase text-lg">NEU MOA</h1>
         </div>
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-white/40 hover:text-white transition-colors">
           {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -159,7 +159,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                     setActiveTab(item.id);
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center gap-5 px-6 py-5 rounded-[2rem] text-xl uppercase font-black tracking-tighter ${
+                  className={`w-full flex items-center gap-5 px-6 py-5 rounded-[2rem] text-xl uppercase font-medium tracking-tighter ${
                     activeTab === item.id 
                       ? 'bg-orange-gradient text-white shadow-2xl' 
                       : 'text-white/20 border border-white/5'
@@ -174,7 +174,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                   setActiveTab('profile');
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center gap-5 px-6 py-5 rounded-[2rem] text-xl uppercase font-black tracking-tighter ${
+                className={`w-full flex items-center gap-5 px-6 py-5 rounded-[2rem] text-xl uppercase font-medium tracking-tighter ${
                   activeTab === 'profile' 
                     ? 'bg-orange-gradient text-white shadow-2xl' 
                     : 'text-white/20 border border-white/5'
@@ -186,7 +186,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
             </nav>
             <button 
               onClick={handleLogout}
-              className="mt-auto flex items-center gap-5 px-6 py-6 rounded-[2rem] text-red-500 font-black uppercase tracking-tighter border border-red-500/20 bg-red-500/5"
+              className="mt-auto flex items-center gap-5 px-6 py-6 rounded-[2rem] text-red-500 font-medium uppercase tracking-tighter border border-red-500/20 bg-red-500/5"
             >
               <LogOut size={26} />
               <span>Sign Out</span>

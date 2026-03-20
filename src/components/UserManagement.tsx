@@ -56,8 +56,8 @@ export const UserManagement: React.FC = () => {
   return (
     <div className="space-y-12">
       <header>
-        <h2 className="text-5xl font-black tracking-tighter text-neu-white uppercase leading-none">User Management</h2>
-        <p className="text-white/40 font-black uppercase tracking-widest text-xs mt-2">Manage system access and assign roles.</p>
+        <h2 className="text-5xl font-medium tracking-tighter text-neu-white uppercase leading-none">User Management</h2>
+        <p className="text-white/40 font-medium uppercase tracking-widest text-xs mt-2">Manage system access and assign roles.</p>
       </header>
 
       <div className="glass-card rounded-[2.5rem] border-white/5 shadow-2xl overflow-hidden">
@@ -65,11 +65,11 @@ export const UserManagement: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-orange-gradient border-b border-white/10 text-neu-white">
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">User</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Role</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Status</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Permissions</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-right">Actions</th>
+                <th className="px-8 py-6 text-[10px] font-medium uppercase tracking-widest">User</th>
+                <th className="px-8 py-6 text-[10px] font-medium uppercase tracking-widest">Role</th>
+                <th className="px-8 py-6 text-[10px] font-medium uppercase tracking-widest">Status</th>
+                <th className="px-8 py-6 text-[10px] font-medium uppercase tracking-widest">Permissions</th>
+                <th className="px-8 py-6 text-[10px] font-medium uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -77,7 +77,7 @@ export const UserManagement: React.FC = () => {
                 <tr key={user.uid} className="hover:bg-white/5 transition-all duration-300 group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-orange-gradient flex items-center justify-center text-neu-white font-black shadow-xl shadow-neu-orange/20 group-hover:scale-105 transition-transform">
+                      <div className="w-12 h-12 rounded-2xl bg-orange-gradient flex items-center justify-center text-neu-white font-medium shadow-xl shadow-neu-orange/20 group-hover:scale-105 transition-transform">
                         {user.displayName?.[0] || user.email?.[0]?.toUpperCase()}
                       </div>
                       <div>
@@ -88,7 +88,7 @@ export const UserManagement: React.FC = () => {
                   </td>
                   <td className="px-8 py-6">
                     <select 
-                      className="bg-white/5 border-none rounded-xl px-4 py-2 text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-neu-orange disabled:opacity-50 text-neu-white cursor-pointer"
+                      className="bg-white/5 border-none rounded-xl px-4 py-2 text-xs font-medium uppercase tracking-widest focus:ring-2 focus:ring-neu-orange disabled:opacity-50 text-neu-white cursor-pointer"
                       value={user.role}
                       onChange={(e) => handleUpdateRole(user.uid, e.target.value as UserRole)}
                       disabled={isProtectedAdmin(user.email) || user.uid === currentUser?.uid}
@@ -100,11 +100,11 @@ export const UserManagement: React.FC = () => {
                   </td>
                   <td className="px-8 py-6">
                     {user.isBlocked ? (
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/30">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/20 text-red-500 text-[10px] font-medium uppercase tracking-widest border border-red-500/30">
                         <Ban size={12} /> Blocked
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-neu-orange/20 text-neu-orange text-[10px] font-black uppercase tracking-widest border border-neu-orange/30">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-neu-orange/20 text-neu-orange text-[10px] font-medium uppercase tracking-widest border border-neu-orange/30">
                         <CheckCircle size={12} /> Active
                       </span>
                     )}
@@ -113,7 +113,7 @@ export const UserManagement: React.FC = () => {
                     {user.role === 'faculty' && (
                       <button 
                         onClick={() => handleToggleMaintain(user.uid, !!user.canMaintainMOA)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                        className={`px-4 py-2 rounded-xl text-[10px] font-medium uppercase tracking-widest transition-all border ${
                           user.canMaintainMOA 
                             ? 'bg-neu-orange/20 text-neu-orange border-neu-orange/30' 
                             : 'bg-white/5 text-white/20 border-white/5 hover:text-white/40'
