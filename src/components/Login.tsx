@@ -116,6 +116,9 @@ export const Login: React.FC = () => {
           case 'auth/too-many-requests':
             errorMessage = 'Too many failed attempts. Please try again later.';
             break;
+          case 'auth/operation-not-allowed':
+            errorMessage = 'Email/Password sign-in is not enabled. Please enable it in the Firebase Console under Authentication > Sign-in method.';
+            break;
           default:
             errorMessage = error.message || errorMessage;
         }
@@ -208,14 +211,14 @@ export const Login: React.FC = () => {
             <h1 className="text-xl font-black text-neu-white uppercase tracking-tighter">NEU MOA</h1>
           </div>
 
-          <div className="glass-card p-6 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden max-w-md mx-auto">
+          <div className="glass-card p-6 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden max-w-md mx-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="absolute top-0 left-0 w-full h-1 bg-orange-gradient" />
             
             <div className="mb-6">
-              <h2 className="text-2xl font-black text-neu-white uppercase tracking-tighter leading-none mb-1">
+              <h2 className="text-2xl font-medium text-neu-white uppercase tracking-tighter leading-none mb-1">
                 {isSignUp ? 'Sign Up' : 'Sign In'}
               </h2>
-              <p className="text-white/40 font-bold text-[10px] uppercase tracking-widest">
+              <p className="text-white/40 font-medium text-[10px] uppercase tracking-widest">
                 {isSignUp ? 'Create your account' : 'Access the Monitoring Portal'}
               </p>
             </div>
@@ -257,20 +260,27 @@ export const Login: React.FC = () => {
             </div>
 
             <form onSubmit={handleAuth} className="space-y-3">
-              {isSignUp && (
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-orange-gradient opacity-0 group-focus-within:opacity-10 blur-xl transition-opacity rounded-xl pointer-events-none" />
-                  <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-neu-orange transition-colors" size={16} />
-                  <input 
-                    type="text"
-                    placeholder="Full Name"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    required
-                    className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-neu-white font-normal text-sm placeholder:text-white/20 focus:border-neu-orange outline-none transition-all relative z-10"
-                  />
-                </div>
-              )}
+              <AnimatePresence mode="popLayout">
+                {isSignUp && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="relative group overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-orange-gradient opacity-0 group-focus-within:opacity-10 blur-xl transition-opacity rounded-xl pointer-events-none" />
+                    <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-neu-orange transition-colors" size={16} />
+                    <input 
+                      type="text"
+                      placeholder="Full Name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      required
+                      className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-neu-white font-normal text-sm placeholder:text-white/20 focus:border-neu-orange outline-none transition-all relative z-10"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <div className="relative group">
                 <div className="absolute inset-0 bg-orange-gradient opacity-0 group-focus-within:opacity-10 blur-xl transition-opacity rounded-xl pointer-events-none" />
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-neu-orange transition-colors" size={16} />
@@ -310,11 +320,11 @@ export const Login: React.FC = () => {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
+              <p className="text-[10px] text-white/40 font-medium uppercase tracking-widest">
                 {isSignUp ? 'Already have an account?' : 'Need an account?'} 
                 <span 
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-neu-orange font-black cursor-pointer hover:underline ml-2"
+                  className="text-neu-orange font-medium cursor-pointer hover:underline ml-2"
                 >
                   {isSignUp ? 'Sign In' : 'Sign Up'}
                 </span>
