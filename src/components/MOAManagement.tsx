@@ -17,7 +17,8 @@ import {
   Building,
   X,
   FileText,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
@@ -34,6 +35,8 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
   const [collegeFilter, setCollegeFilter] = useState<string>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMOA, setEditingMOA] = useState<MOA | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [moaToDelete, setMoaToDelete] = useState<MOA | null>(null);
   const [showDeleted, setShowDeleted] = useState(false);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
@@ -53,16 +56,20 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
       
       const matchesStatus = statusFilter === 'all' || m.moaStatus === statusFilter;
       const matchesCollege = collegeFilter === 'all' || m.endorsedByCollege === collegeFilter;
+      
+      // Faculty and Students can ONLY see active MOAs
+      // Admin can toggle between active and deleted
       const isDeleted = m.status === 'deleted' || m.isDeleted;
       
-      // If showDeleted is true (Admin only), show ONLY deleted.
-      // Otherwise, show ONLY active.
-      // Faculty never see deleted.
-      const matchesDeleted = (isAdmin && showDeleted) ? isDeleted : !isDeleted;
-
-      return matchesSearch && matchesStatus && matchesCollege && matchesDeleted;
+      if (isAdmin) {
+        const matchesDeleted = showDeleted ? isDeleted : !isDeleted;
+        return matchesSearch && matchesStatus && matchesCollege && matchesDeleted;
+      } else {
+        // Faculty and Students: strictly active only
+        return matchesSearch && matchesStatus && matchesCollege && !isDeleted;
+      }
     });
-  }, [moas, searchTerm, statusFilter, collegeFilter, showDeleted]);
+  }, [moas, searchTerm, statusFilter, collegeFilter, showDeleted, isAdmin]);
 
   const handleOpenForm = (moa?: MOA) => {
     if (moa) setEditingMOA(moa);
@@ -70,8 +77,20 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
     setIsFormOpen(true);
   };
 
+  const handleConfirmDelete = async () => {
+    if (!moaToDelete) return;
+    try {
+      await softDeleteMOA(moaToDelete.id, moaToDelete.companyName);
+      showToast('MOA MOVED TO TRASH');
+      setIsConfirmOpen(false);
+      setMoaToDelete(null);
+    } catch (error) {
+      showToast('FAILED TO DELETE MOA');
+    }
+  };
+
   return (
-    <div className="space-y-6 relative">
+    <div className="h-full flex flex-col space-y-6 relative">
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
@@ -82,7 +101,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
             className="fixed top-4 left-1/2 z-[100] flex items-center gap-3 glass-card text-neu-white px-8 py-4 rounded-2xl shadow-2xl border-white/10"
           >
             <CheckCircle2 size={20} className="text-neu-orange" />
-            <span className="font-black uppercase tracking-tighter">{toast.message}</span>
+            <span className="font-medium uppercase tracking-tighter">{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -142,29 +161,35 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        <AnimatePresence mode="popLayout">
-          {filteredMOAs.map((moa) => (
-            <MOACard 
-              key={moa.id} 
-              moa={moa} 
-              onEdit={() => handleOpenForm(moa)}
-              canEdit={canMaintain}
-              isAdmin={isAdmin}
-              onToast={showToast}
-            />
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {filteredMOAs.length === 0 && (
-        <div className="text-center py-24 glass-card rounded-[2.5rem] border-dashed border-white/10">
-          <div className="flex flex-col items-center">
-            <FileText size={64} className="mx-auto text-white/10 mb-6" />
-            <p className="text-white/40 font-medium uppercase tracking-widest">No MOA records found matching your criteria.</p>
-          </div>
+      <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
+          <AnimatePresence mode="popLayout">
+            {filteredMOAs.map((moa) => (
+              <MOACard 
+                key={moa.id} 
+                moa={moa} 
+                onEdit={() => handleOpenForm(moa)}
+                onDelete={() => {
+                  setMoaToDelete(moa);
+                  setIsConfirmOpen(true);
+                }}
+                canEdit={canMaintain}
+                isAdmin={isAdmin}
+                onToast={showToast}
+              />
+            ))}
+          </AnimatePresence>
         </div>
-      )}
+
+        {filteredMOAs.length === 0 && (
+          <div className="text-center py-24 glass-card rounded-[2.5rem] border-dashed border-white/10">
+            <div className="flex flex-col items-center">
+              <FileText size={64} className="mx-auto text-white/10 mb-6" />
+              <p className="text-white/40 font-medium uppercase tracking-widest">No MOA records found matching your criteria.</p>
+            </div>
+          </div>
+        )}
+      </div>
 
       {isFormOpen && (
         <MOAForm 
@@ -177,6 +202,18 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
           onToast={showToast}
         />
       )}
+
+      {isConfirmOpen && moaToDelete && (
+        <ConfirmationModal
+          title="Confirm Deletion"
+          message={`Are you sure you want to move ${moaToDelete.companyName} to trash? This action can be reversed by an administrator.`}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setIsConfirmOpen(false);
+            setMoaToDelete(null);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -184,10 +221,11 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
 const MOACard: React.FC<{ 
   moa: MOA, 
   onEdit: () => void, 
+  onDelete: () => void,
   canEdit: boolean, 
   isAdmin: boolean,
   onToast: (msg: string) => void
-}> = ({ moa, onEdit, canEdit, isAdmin, onToast }) => {
+}> = ({ moa, onEdit, onDelete, canEdit, isAdmin, onToast }) => {
   const { isStudent } = useAuth();
   
   const statusColors = {
@@ -195,13 +233,6 @@ const MOACard: React.FC<{
     PROCESSING: 'bg-white/10 text-white/60 border-white/20',
     EXPIRED: 'bg-red-500/20 text-red-500 border-red-500/30',
     EXPIRING: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30',
-  };
-
-  const handleDelete = async () => {
-    if (confirm(`Are you sure you want to delete ${moa.companyName}?`)) {
-      await softDeleteMOA(moa.id, moa.companyName);
-      onToast('MOA MOVED TO TRASH');
-    }
   };
 
   const handleRecover = async () => {
@@ -228,7 +259,7 @@ const MOACard: React.FC<{
                 <button onClick={onEdit} className="p-2.5 text-white/20 hover:text-neu-white hover:bg-white/10 rounded-xl transition-all">
                   <Edit2 size={18} />
                 </button>
-                <button onClick={handleDelete} className="p-2.5 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
+                <button onClick={onDelete} className="p-2.5 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
                   <Trash2 size={18} />
                 </button>
               </>
@@ -273,6 +304,45 @@ const MOACard: React.FC<{
         </div>
       )}
     </motion.div>
+  );
+};
+
+const ConfirmationModal: React.FC<{
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}> = ({ title, message, onConfirm, onCancel }) => {
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-neu-black/80 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="glass-card w-full max-w-md rounded-[2.5rem] p-10 border-white/10 shadow-2xl"
+      >
+        <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mb-8">
+          <AlertCircle size={32} />
+        </div>
+        
+        <h3 className="text-3xl font-medium text-neu-white tracking-tighter uppercase leading-none mb-4">{title}</h3>
+        <p className="text-white/40 font-medium uppercase tracking-widest text-xs leading-relaxed mb-10">{message}</p>
+        
+        <div className="flex gap-4">
+          <button
+            onClick={onCancel}
+            className="flex-1 px-6 py-4 rounded-xl font-medium uppercase tracking-tighter text-white/40 bg-white/5 hover:bg-white/10 transition-all border border-white/5"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-6 py-4 rounded-xl font-medium uppercase tracking-tighter text-neu-white bg-orange-gradient hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20"
+          >
+            Confirm
+          </button>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 
