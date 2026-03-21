@@ -17,11 +17,11 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
   const stats = useMemo(() => {
-    const active = moas.filter(m => m.moaStatus === 'APPROVED' && !m.isDeleted).length;
-    const processing = moas.filter(m => m.moaStatus === 'PROCESSING' && !m.isDeleted).length;
-    const expired = moas.filter(m => m.moaStatus === 'EXPIRED' && !m.isDeleted).length;
+    const active = moas.filter(m => m.moaStatus === 'APPROVED' && m.status !== 'deleted' && !m.isDeleted).length;
+    const processing = moas.filter(m => m.moaStatus === 'PROCESSING' && m.status !== 'deleted' && !m.isDeleted).length;
+    const expired = moas.filter(m => m.moaStatus === 'EXPIRED' && m.status !== 'deleted' && !m.isDeleted).length;
     const expiring = moas.filter(m => {
-      if (m.isDeleted || m.moaStatus !== 'APPROVED') return false;
+      if (m.status === 'deleted' || m.isDeleted || m.moaStatus !== 'APPROVED') return false;
       const expDate = parseISO(m.expirationDate);
       const twoMonthsFromNow = addMonths(new Date(), 2);
       return isBefore(expDate, twoMonthsFromNow) && !isBefore(expDate, new Date());
@@ -101,7 +101,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
           
           <div className="space-y-8">
             {Object.entries(
-              moas.filter(m => !m.isDeleted).reduce((acc, m) => {
+              moas.filter(m => m.status !== 'deleted' && !m.isDeleted).reduce((acc, m) => {
                 acc[m.industryType] = (acc[m.industryType] || 0) + 1;
                 return acc;
               }, {} as Record<string, number>)
@@ -114,7 +114,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
                 <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
                   <motion.div 
                     initial={{ width: 0 }}
-                    animate={{ width: `${((count as number) / (moas.filter(m => !m.isDeleted).length || 1)) * 100}%` }}
+                    animate={{ width: `${((count as number) / (moas.filter(m => m.status !== 'deleted' && !m.isDeleted).length || 1)) * 100}%` }}
                     transition={{ duration: 1.5, ease: "circOut" }}
                     className="bg-orange-gradient h-full rounded-full shadow-[0_0_10px_rgba(255,77,0,0.3)]" 
                   ></motion.div>
@@ -141,7 +141,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
           
           <div className="space-y-8">
             {Object.entries(
-              moas.filter(m => !m.isDeleted).reduce((acc, m) => {
+              moas.filter(m => m.status !== 'deleted' && !m.isDeleted).reduce((acc, m) => {
                 acc[m.endorsedByCollege] = (acc[m.endorsedByCollege] || 0) + 1;
                 return acc;
               }, {} as Record<string, number>)
@@ -154,7 +154,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ moas }) => {
                 <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
                   <motion.div 
                     initial={{ width: 0 }}
-                    animate={{ width: `${((count as number) / (moas.filter(m => !m.isDeleted).length || 1)) * 100}%` }}
+                    animate={{ width: `${((count as number) / (moas.filter(m => m.status !== 'deleted' && !m.isDeleted).length || 1)) * 100}%` }}
                     transition={{ duration: 1.5, ease: "circOut" }}
                     className="bg-orange-gradient h-full rounded-full shadow-[0_0_10px_rgba(255,77,0,0.3)]" 
                   ></motion.div>

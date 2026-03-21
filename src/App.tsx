@@ -9,7 +9,7 @@ import { Profile } from './components/Profile';
 import { Login } from './components/Login';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { db } from './firebase';
-import { collection, onSnapshot, query, orderBy, getDocFromServer, doc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocFromServer, doc, where } from 'firebase/firestore';
 import { MOA } from './types';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 
@@ -35,15 +35,28 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (!user || profile?.isBlocked) return;
 
-    const q = query(collection(db, 'moa_records'), orderBy('createdAt', 'desc'));
+    let q = query(collection(db, 'moa_records'), orderBy('createdAt', 'desc'));
+    
+    // If not admin, strictly filter for active status at the query level
+    if (!isAdmin) {
+      q = query(
+        collection(db, 'moa_records'), 
+        where('status', '==', 'active'),
+        orderBy('createdAt', 'desc')
+      );
+    }
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const moasData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MOA));
       setMoas(moasData);
       setMoasLoading(false);
+    }, (error) => {
+      console.error("Error fetching MOAs:", error);
+      setMoasLoading(false);
     });
 
     return () => unsubscribe();
-  }, [user, profile?.isBlocked]);
+  }, [user, profile?.isBlocked, isAdmin]);
 
   if (loading) {
     return (
