@@ -23,25 +23,15 @@ export const AuditTrail: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(100));
+    const q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(100));
     
-    // Faculty can only see global logs
-    if (isFaculty) {
-      q = query(
-        collection(db, 'audit_logs'), 
-        where('type', '==', 'global'),
-        orderBy('timestamp', 'desc'), 
-        limit(100)
-      );
-    }
-
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const logsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLog));
       setLogs(logsData);
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [isFaculty]);
+  }, []);
 
   const getOperationColor = (op: AuditLog['operation']) => {
     switch (op) {
@@ -77,7 +67,7 @@ export const AuditTrail: React.FC = () => {
             Recent Activity
           </div>
           <span className="text-[10px] text-white/60 font-medium uppercase tracking-widest">
-            {isFaculty ? 'Showing global system logs' : 'Showing last 100 operations'}
+            Showing last 100 operations
           </span>
         </div>
 

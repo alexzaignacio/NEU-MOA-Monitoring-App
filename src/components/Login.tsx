@@ -171,20 +171,19 @@ export const Login: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
-              className="text-6xl font-medium mb-4 tracking-tighter leading-none uppercase"
+              className="text-7xl font-bold mb-6 tracking-tighter leading-none uppercase"
             >
-              WE'VE SCALED <br />
-              <span className="text-orange-gradient">MONITORING</span> <br />
-              YOURS IS NEXT
+              NEU MOA <br />
+              <span className="text-orange-gradient">MONITORING PORTAL</span>
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-xl text-white/60 font-medium max-w-md"
+              className="text-xl text-white/60 font-normal max-w-md leading-relaxed"
             >
               THIS IS WHAT GROWTH LOOKS LIKE. <br />
-              Empowering the university community with a modern, secure, and streamlined MOA monitoring system.
+              Empowering the university community with a modern, secure, and streamlined MOA MONITORING SYSTEM.
             </motion.p>
           </div>
         </div>

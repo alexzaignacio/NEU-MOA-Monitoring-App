@@ -14,7 +14,7 @@ import { MOA } from './types';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 
 const AppContent: React.FC = () => {
-  const { user, profile, loading, isAdmin } = useAuth();
+  const { user, profile, loading, isAdmin, isFaculty } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [moas, setMoas] = useState<MOA[]>([]);
   const [moasLoading, setMoasLoading] = useState(true);
@@ -102,7 +102,7 @@ const AppContent: React.FC = () => {
       case 'users':
         return isAdmin ? <UserManagement /> : <Dashboard moas={moas} />;
       case 'audit':
-        return isAdmin ? <AuditTrail /> : <Dashboard moas={moas} />;
+        return (isAdmin || isFaculty) ? <AuditTrail /> : <Dashboard moas={moas} />;
       case 'profile':
         return <Profile />;
       default:

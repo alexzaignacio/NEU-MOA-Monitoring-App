@@ -31,7 +31,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true },
     { id: 'moas', label: 'MOA Management', icon: FileText, show: true },
     { id: 'users', label: 'User Management', icon: Users, show: isAdmin },
-    { id: 'audit', label: 'Audit Trail', icon: ClipboardList, show: isAdmin },
+    { id: 'audit', label: 'Audit Trail', icon: ClipboardList, show: isAdmin || isFaculty },
   ];
 
   const handleLogout = async () => {

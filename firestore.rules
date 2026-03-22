@@ -52,7 +52,7 @@ service cloud.firestore {
     }
 
     function canMaintainMOA() {
-      return isAdmin() || (isFaculty() && getUserData().canMaintainMOA == true);
+      return isAdmin() || isFaculty();
     }
 
     function isValidMOA(data) {
@@ -97,7 +97,7 @@ service cloud.firestore {
     }
 
     match /audit_logs/{logId} {
-      allow read: if isAdmin() || (isFaculty() && resource.data.type == 'global');
+      allow read: if isAdmin() || isFaculty();
       allow create: if isAuthenticated() && isNotBlocked();
       allow update, delete: if false;
     }

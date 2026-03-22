@@ -44,7 +44,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
   const [selectedMOAForDetails, setSelectedMOAForDetails] = useState<MOA | null>(null);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
-  const canMaintain = isAdmin || (isFaculty && profile?.canMaintainMOA);
+  const canMaintain = isAdmin || isFaculty;
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
