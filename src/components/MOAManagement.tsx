@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { MOA, MOAStatus } from '../types';
+import React, { useState, useMemo, useEffect } from 'react';
+import { MOA, MOAStatus, AuditLog } from '../types';
 import { useAuth } from '../AuthContext';
 import { 
   Search, 
@@ -18,11 +18,14 @@ import {
   X,
   FileText,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { createMOA, updateMOA, softDeleteMOA, recoverMOA } from '../services/moaService';
+import { db } from '../firebase';
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 
 interface MOAManagementProps {
   moas: MOA[];
@@ -38,6 +41,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [moaToDelete, setMoaToDelete] = useState<MOA | null>(null);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [selectedMOAForDetails, setSelectedMOAForDetails] = useState<MOA | null>(null);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
   const canMaintain = isAdmin || (isFaculty && profile?.canMaintainMOA);
@@ -173,6 +177,7 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
                   setMoaToDelete(moa);
                   setIsConfirmOpen(true);
                 }}
+                onView={() => setSelectedMOAForDetails(moa)}
                 canEdit={canMaintain}
                 isAdmin={isAdmin}
                 onToast={showToast}
@@ -214,6 +219,14 @@ export const MOAManagement: React.FC<MOAManagementProps> = ({ moas }) => {
           }}
         />
       )}
+
+      {selectedMOAForDetails && (
+        <MOADetails 
+          moa={selectedMOAForDetails} 
+          onClose={() => setSelectedMOAForDetails(null)} 
+          isAdmin={isAdmin}
+        />
+      )}
     </div>
   );
 };
@@ -222,10 +235,11 @@ const MOACard: React.FC<{
   moa: MOA, 
   onEdit: () => void, 
   onDelete: () => void,
+  onView: () => void,
   canEdit: boolean, 
   isAdmin: boolean,
   onToast: (msg: string) => void
-}> = ({ moa, onEdit, onDelete, canEdit, isAdmin, onToast }) => {
+}> = ({ moa, onEdit, onDelete, onView, canEdit, isAdmin, onToast }) => {
   const { isStudent } = useAuth();
   
   const statusColors = {
@@ -246,7 +260,8 @@ const MOACard: React.FC<{
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className={`glass-card rounded-[2rem] border-white/5 hover:border-white/20 transition-all duration-500 group overflow-hidden flex flex-col ${(moa.status === 'deleted' || moa.isDeleted) ? 'opacity-50 grayscale' : ''}`}
+      className={`glass-card rounded-[2rem] border-white/5 hover:border-white/20 transition-all duration-500 group overflow-hidden flex flex-col cursor-pointer ${(moa.status === 'deleted' || moa.isDeleted) ? 'opacity-50 grayscale' : ''}`}
+      onClick={onView}
     >
       <div className="p-8 flex-1">
         <div className="flex justify-between items-start mb-6">
@@ -254,18 +269,49 @@ const MOACard: React.FC<{
             {moa.moaStatus}
           </span>
           <div className="flex gap-2">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onView();
+              }} 
+              className="p-2.5 text-white/20 hover:text-neu-white hover:bg-white/10 rounded-xl transition-all"
+              title="View Details"
+            >
+              <ExternalLink size={18} />
+            </button>
             {canEdit && !(moa.status === 'deleted' || moa.isDeleted) && (
               <>
-                <button onClick={onEdit} className="p-2.5 text-white/20 hover:text-neu-white hover:bg-white/10 rounded-xl transition-all">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }} 
+                  className="p-2.5 text-white/20 hover:text-neu-white hover:bg-white/10 rounded-xl transition-all"
+                  title="Edit MOA"
+                >
                   <Edit2 size={18} />
                 </button>
-                <button onClick={onDelete} className="p-2.5 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }} 
+                  className="p-2.5 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                  title="Delete MOA"
+                >
                   <Trash2 size={18} />
                 </button>
               </>
             )}
             {isAdmin && (moa.status === 'deleted' || moa.isDeleted) && (
-              <button onClick={handleRecover} className="p-2.5 text-white/20 hover:text-neu-orange hover:bg-neu-orange/10 rounded-xl transition-all">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRecover();
+                }} 
+                className="p-2.5 text-white/20 hover:text-neu-orange hover:bg-neu-orange/10 rounded-xl transition-all"
+                title="Recover MOA"
+              >
                 <RotateCcw size={18} />
               </button>
             )}
@@ -304,6 +350,205 @@ const MOACard: React.FC<{
         </div>
       )}
     </motion.div>
+  );
+};
+
+const MOADetails: React.FC<{
+  moa: MOA;
+  onClose: () => void;
+  isAdmin: boolean;
+}> = ({ moa, onClose, isAdmin }) => {
+  const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'history' && isAdmin) {
+      setLoadingLogs(true);
+      const q = query(
+        collection(db, 'audit_logs'),
+        where('moaId', '==', moa.id),
+        orderBy('timestamp', 'desc')
+      );
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const logsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLog));
+        setLogs(logsData);
+        setLoadingLogs(false);
+      });
+      return () => unsubscribe();
+    }
+  }, [activeTab, moa.id, isAdmin]);
+
+  return (
+    <div className="fixed inset-0 bg-neu-black/80 backdrop-blur-xl z-[120] flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="glass-card w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden border-white/10 flex flex-col"
+      >
+        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-neu-black shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-orange-gradient rounded-2xl flex items-center justify-center text-white shadow-lg">
+              <FileText size={24} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-medium uppercase tracking-tighter text-neu-white">{moa.companyName}</h3>
+              <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-medium">MOA Reference: {moa.hteid || 'N/A'}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/40 hover:text-white">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="flex border-b border-white/5 bg-neu-black/50">
+          <button
+            onClick={() => setActiveTab('details')}
+            className={`px-8 py-4 text-[10px] font-medium uppercase tracking-widest transition-all relative ${
+              activeTab === 'details' ? 'text-neu-orange' : 'text-white/20 hover:text-white/40'
+            }`}
+          >
+            Details
+            {activeTab === 'details' && (
+              <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-neu-orange" />
+            )}
+          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`px-8 py-4 text-[10px] font-medium uppercase tracking-widest transition-all relative ${
+                activeTab === 'history' ? 'text-neu-orange' : 'text-white/20 hover:text-white/40'
+              }`}
+            >
+              History
+              {activeTab === 'history' && (
+                <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-neu-orange" />
+              )}
+            </button>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-neu-black/20">
+          {activeTab === 'details' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="space-y-8">
+                <section>
+                  <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] text-neu-orange mb-4">Company Information</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Address</p>
+                      <p className="text-sm text-white/80 font-normal uppercase tracking-tighter leading-relaxed">{moa.companyAddress}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Industry Type</p>
+                      <p className="text-sm text-white/80 font-normal uppercase tracking-tighter">{moa.industryType}</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] text-neu-orange mb-4">Contact Details</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Contact Person</p>
+                      <p className="text-sm text-white/80 font-normal uppercase tracking-tighter">{moa.contactPerson}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Email Address</p>
+                      <p className="text-sm text-white/80 font-normal tracking-tighter lowercase">{moa.contactPersonEmail}</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div className="space-y-8">
+                <section>
+                  <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] text-neu-orange mb-4">Agreement Status</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="glass-card p-4 rounded-2xl border-white/5">
+                      <p className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Status</p>
+                      <p className="text-sm text-neu-white font-medium uppercase tracking-tighter">{moa.moaStatus}</p>
+                    </div>
+                    <div className="glass-card p-4 rounded-2xl border-white/5">
+                      <p className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Record Status</p>
+                      <p className="text-sm text-neu-white font-medium uppercase tracking-tighter">{moa.status}</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] text-neu-orange mb-4">Timeline & Endorsement</h4>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center py-2 border-b border-white/5">
+                      <span className="text-[10px] text-white/20 uppercase tracking-widest">Effective Date</span>
+                      <span className="text-sm text-white/80 font-normal">{moa.effectiveDate}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-white/5">
+                      <span className="text-[10px] text-white/20 uppercase tracking-widest">Expiration Date</span>
+                      <span className="text-sm text-white/80 font-normal">{moa.expirationDate}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-[10px] text-white/20 uppercase tracking-widest">Endorsed By</span>
+                      <span className="text-sm text-white/80 font-normal uppercase tracking-tighter">{moa.endorsedByCollege}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="pt-4">
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <div className="flex items-center justify-between text-[10px] text-white/20 uppercase tracking-widest mb-2">
+                      <span>System Metadata</span>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[9px] text-white/30 uppercase tracking-tighter">Created: {format(parseISO(moa.createdAt), 'MMM dd, yyyy HH:mm')}</p>
+                      <p className="text-[9px] text-white/30 uppercase tracking-tighter">Last Update: {format(parseISO(moa.updatedAt), 'MMM dd, yyyy HH:mm')}</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {loadingLogs ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="w-8 h-8 border-2 border-neu-orange border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : logs.length > 0 ? (
+                logs.map((log) => (
+                  <div key={log.id} className="glass-card p-4 rounded-2xl border-white/5 flex items-start gap-4">
+                    <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-neu-orange shrink-0">
+                      <History size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-1">
+                        <p className="text-xs font-medium text-neu-white uppercase tracking-tighter truncate">{log.userName}</p>
+                        <span className="text-[9px] text-white/20 uppercase tracking-widest shrink-0">{format(parseISO(log.timestamp), 'MMM dd, HH:mm')}</span>
+                      </div>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">{log.operation}</p>
+                      <p className="text-[11px] text-white/60 font-normal uppercase tracking-tighter italic">{log.details}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-20">
+                  <History size={48} className="mx-auto text-white/5 mb-4" />
+                  <p className="text-[10px] text-white/20 uppercase tracking-widest">No history records found for this MOA.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="p-8 border-t border-white/5 bg-neu-black flex justify-end shrink-0">
+          <button
+            onClick={onClose}
+            className="px-8 py-4 rounded-xl font-medium uppercase tracking-tighter text-neu-white bg-orange-gradient hover:opacity-90 transition-all shadow-2xl shadow-neu-orange/20"
+          >
+            Close Details
+          </button>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 
