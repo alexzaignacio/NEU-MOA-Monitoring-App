@@ -1,20 +1,26 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# NEU MOA Monitoring App
 
-# Run and deploy your AI Studio app
+A dedicated monitoring application designed for NEU (New Era University) Memorandum of Agreement (MOA) tracking and management.
 
-This contains everything you need to run your app locally.
+## Live Demo
+You can access the live application here:  
+**[https://neu-moa-monitoring-app.vercel.app/](https://neu-moa-monitoring-app.vercel.app/)**
 
-View your app in AI Studio: https://ai.studio/apps/f4fca0d0-9693-49f9-94d9-7c3dc1b27954
+## Features
+- **Real-time Monitoring:** Track the status of active and pending MOAs.
+- **Data Management:** Efficiently organize partner organization details.
+- **Status Updates:** Keep stakeholders informed on the progress of legal agreements.
+- **Responsive Design:** Optimized for both desktop and mobile viewing.
 
-## Run Locally
+## Tech Stack
+- **Frontend:** React / Next.js (Deployed on Vercel)
+- **Styling:** Tailwind CSS (or your specific CSS framework)
+- **Deployment:** [Vercel](https://vercel.com)
 
-**Prerequisites:**  Node.js
+## Installation & Local Development
 
+To run this project locally, follow these steps:
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/alexzaignacio/NEU-MOA-Monitoring-App.git](https://github.com/alexzaignacio/NEU-MOA-Monitoring-App.git)
